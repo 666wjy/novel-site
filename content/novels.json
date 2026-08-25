@@ -1,0 +1,14 @@
+[
+  {
+    "slug": "starlight-dream",
+    "title": "星光之梦",
+    "author": "你的名字",
+    "description": "一个普通程序员意外获得穿越星际的能力，在未知宇宙中展开冒险。AI 辅助原创，赛博朋克 × 星际探索。",
+    "cover": "/covers/starlight.jpg",
+    "genre": ["科幻", "冒险", "连载中"],
+    "status": "ongoing",
+    "freeChapters": 3,
+    "priceLabel": "$2.99",
+    "updatedAt": "2026-08-24"
+  }
+]

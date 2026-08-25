@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.prose-ink p {
+  margin-bottom: 1.25em;
+}
+
+.prose-ink h2 {
+  font-family: Georgia, "Noto Serif SC", serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+  color: #221f1b;
+}
