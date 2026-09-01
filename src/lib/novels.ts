@@ -93,50 +93,66 @@ function getChapterFromFiles(novelSlug: string, chapterSlug: string): Chapter | 
 
 export async function getAllNovels(): Promise<NovelMeta[]> {
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    const rows = await db.select().from(novelsTable).orderBy(desc(novelsTable.updatedAt));
-    return rows.map(mapNovelRow);
+    try {
+      const db = getDb();
+      const rows = await db.select().from(novelsTable).orderBy(desc(novelsTable.updatedAt));
+      return rows.map(mapNovelRow);
+    } catch (err) {
+      console.error("getAllNovels DB error, fallback to files:", err);
+    }
   }
   return getAllNovelsFromFiles();
 }
 
 export async function getNovel(slug: string): Promise<NovelMeta | undefined> {
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    const rows = await db.select().from(novelsTable).where(eq(novelsTable.slug, slug)).limit(1);
-    return rows[0] ? mapNovelRow(rows[0]) : undefined;
+    try {
+      const db = getDb();
+      const rows = await db.select().from(novelsTable).where(eq(novelsTable.slug, slug)).limit(1);
+      return rows[0] ? mapNovelRow(rows[0]) : undefined;
+    } catch (err) {
+      console.error("getNovel DB error, fallback to files:", err);
+    }
   }
   return getAllNovelsFromFiles().find((n) => n.slug === slug);
 }
 
 export async function getChapterMetas(novelSlug: string): Promise<ChapterMeta[]> {
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    const rows = await db
-      .select()
-      .from(chaptersTable)
-      .where(eq(chaptersTable.novelSlug, novelSlug))
-      .orderBy(asc(chaptersTable.order));
-    return rows.map((row) => ({
-      slug: row.slug,
-      novelSlug: row.novelSlug,
-      title: row.title,
-      order: row.order,
-      summary: row.summary ?? undefined,
-    }));
+    try {
+      const db = getDb();
+      const rows = await db
+        .select()
+        .from(chaptersTable)
+        .where(eq(chaptersTable.novelSlug, novelSlug))
+        .orderBy(asc(chaptersTable.order));
+      return rows.map((row) => ({
+        slug: row.slug,
+        novelSlug: row.novelSlug,
+        title: row.title,
+        order: row.order,
+        summary: row.summary ?? undefined,
+      }));
+    } catch (err) {
+      console.error("getChapterMetas DB error, fallback to files:", err);
+    }
   }
   return getChapterMetasFromFiles(novelSlug);
 }
 
 export async function getChapter(novelSlug: string, chapterSlug: string): Promise<Chapter | undefined> {
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    const rows = await db
-      .select()
-      .from(chaptersTable)
-      .where(and(eq(chaptersTable.novelSlug, novelSlug), eq(chaptersTable.slug, chapterSlug)))
-      .limit(1);
-    return rows[0] ? mapChapterRow(rows[0]) : undefined;
+    try {
+      const db = getDb();
+      const rows = await db
+        .select()
+        .from(chaptersTable)
+        .where(and(eq(chaptersTable.novelSlug, novelSlug), eq(chaptersTable.slug, chapterSlug)))
+        .limit(1);
+      return rows[0] ? mapChapterRow(rows[0]) : undefined;
+    } catch (err) {
+      console.error("getChapter DB error, fallback to files:", err);
+    }
   }
   return getChapterFromFiles(novelSlug, chapterSlug);
 }
