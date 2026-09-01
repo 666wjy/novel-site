@@ -8,8 +8,11 @@
 - 每本书前 N 章免费（默认 3 章，可在 `novels.json` 配置）
 - 超出免费章节显示付费墙
 - Stripe 支付：单本解锁 $2.99 / 全站订阅 $9.99 月
-- 内容用 Markdown 管理，无需数据库
-- AI 辅助原创小说可直接上架
+- PostgreSQL 数据库（Neon）存订单、小说、章节
+- 简易管理后台 `/admin` 查看订单
+- 内容可用 Markdown 管理，导入数据库后线上读取
+
+> 数据库配置见 [DATABASE.md](./DATABASE.md)
 
 ## 目录结构
 

@@ -13,17 +13,17 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const novel = getNovel(slug);
+  const novel = await getNovel(slug);
   if (!novel) return { title: "Not Found" };
   return { title: novel.title, description: novel.description };
 }
 
 export default async function NovelPage({ params }: Props) {
   const { slug } = await params;
-  const novel = getNovel(slug);
+  const novel = await getNovel(slug);
   if (!novel) notFound();
 
-  const chapters = getChapterMetas(slug);
+  const chapters = await getChapterMetas(slug);
   const hasAccess = await checkReaderAccess(slug);
 
   return (

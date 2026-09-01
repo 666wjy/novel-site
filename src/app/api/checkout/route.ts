@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       if (!novelSlug) {
         return NextResponse.json({ error: "Missing novel" }, { status: 400 });
       }
-      const novel = getNovel(novelSlug);
+      const novel = await getNovel(novelSlug);
       if (!novel) {
         return NextResponse.json({ error: "Novel not found" }, { status: 404 });
       }

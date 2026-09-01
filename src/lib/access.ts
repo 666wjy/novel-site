@@ -8,5 +8,5 @@ export async function checkReaderAccess(novelSlug: string): Promise<boolean> {
 
   if (!email || !token) return false;
   if (!verifyAccessToken(email, token)) return false;
-  return hasNovelAccess(email, novelSlug);
+  return await hasNovelAccess(email, novelSlug);
 }

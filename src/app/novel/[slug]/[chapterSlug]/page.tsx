@@ -19,20 +19,20 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, chapterSlug } = await params;
-  const chapter = getChapter(slug, chapterSlug);
+  const chapter = await getChapter(slug, chapterSlug);
   if (!chapter) return { title: "Not Found" };
   return { title: chapter.title };
 }
 
 export default async function ChapterPage({ params }: Props) {
   const { slug, chapterSlug } = await params;
-  const novel = getNovel(slug);
-  const chapter = getChapter(slug, chapterSlug);
+  const novel = await getNovel(slug);
+  const chapter = await getChapter(slug, chapterSlug);
   if (!novel || !chapter) notFound();
 
   const hasAccess = await checkReaderAccess(slug);
   const canRead = isChapterFree(novel, chapter.order) || hasAccess;
-  const { prev, next } = getAdjacentChapters(slug, chapterSlug);
+  const { prev, next } = await getAdjacentChapters(slug, chapterSlug);
 
   return (
     <article>

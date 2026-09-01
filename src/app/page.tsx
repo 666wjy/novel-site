@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   description: siteConfig.tagline,
 };
 
-export default function HomePage() {
-  const novels = getAllNovels();
+export default async function HomePage() {
+  const novels = await getAllNovels();
 
   return (
     <div>

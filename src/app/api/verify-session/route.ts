@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Invalid session metadata" }, { status: 400 });
     }
 
-    if (!findPurchaseBySession(sessionId)) {
-      addPurchase({
+    if (!(await findPurchaseBySession(sessionId))) {
+      await addPurchase({
         email,
         type,
         novelSlug: type === "novel_unlock" ? novelSlug : undefined,

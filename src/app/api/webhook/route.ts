@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const novelSlug = session.metadata?.novelSlug || undefined;
 
     if (email && type) {
-      addPurchase({
+      await addPurchase({
         email,
         type,
         novelSlug: type === "novel_unlock" ? novelSlug : undefined,
