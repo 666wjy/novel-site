@@ -6,14 +6,15 @@ import { NextRequest, NextResponse } from "next/server";
  * HK / TW / MO are not blocked.
  */
 export function middleware(request: NextRequest) {
-  const country =
-    request.geo?.country ||
+  const country = (
     request.headers.get("x-nf-country") ||
+    request.headers.get("x-country") ||
     request.headers.get("cf-ipcountry") ||
     request.headers.get("x-vercel-ip-country") ||
-    "";
+    ""
+  ).toUpperCase();
 
-  if (country.toUpperCase() === "CN") {
+  if (country === "CN") {
     return new NextResponse(
       `<!DOCTYPE html>
 <html lang="en">
