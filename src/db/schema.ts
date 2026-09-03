@@ -53,3 +53,14 @@ export const chapters = pgTable(
   },
   (table) => [uniqueIndex("chapters_novel_slug_idx").on(table.novelSlug, table.slug)]
 );
+
+export const comments = pgTable("comments", {
+  id: text("id").primaryKey(),
+  novelSlug: text("novel_slug")
+    .notNull()
+    .references(() => novels.slug, { onDelete: "cascade" }),
+  chapterSlug: text("chapter_slug").notNull(),
+  authorName: text("author_name").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

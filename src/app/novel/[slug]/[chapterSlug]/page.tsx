@@ -11,6 +11,7 @@ import {
 import { checkReaderAccess } from "@/lib/access";
 import { Paywall } from "@/components/Paywall";
 import { UnlockBanner } from "@/components/UnlockBanner";
+import { CommentSection } from "@/components/CommentSection";
 import { renderMarkdown } from "@/lib/utils";
 
 interface Props {
@@ -87,6 +88,8 @@ export default async function ChapterPage({ params }: Props) {
           <span />
         )}
       </nav>
+
+      {canRead && <CommentSection novelSlug={slug} chapterSlug={chapterSlug} />}
     </article>
   );
 }

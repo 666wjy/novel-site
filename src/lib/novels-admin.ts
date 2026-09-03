@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { asc, eq } from "drizzle-orm";
-import { getDb } from "@/db";
+import { getDb, isDatabaseEnabled } from "@/db";
 import { novels as novelsTable, chapters as chaptersTable } from "@/db/schema";
 import type { NovelMeta } from "./types";
 
@@ -97,6 +97,21 @@ export async function getAdminChapterList(novelSlug: string) {
     .from(chaptersTable)
     .where(eq(chaptersTable.novelSlug, novelSlug))
     .orderBy(asc(chaptersTable.order));
+}
+
+export async function countChaptersByNovel(): Promise<Record<string, number>> {
+  if (!isDatabaseEnabled()) return {};
+  try {
+    const db = getDb();
+    const rows = await db.select({ novelSlug: chaptersTable.novelSlug }).from(chaptersTable);
+    const counts: Record<string, number> = {};
+    for (const row of rows) {
+      counts[row.novelSlug] = (counts[row.novelSlug] || 0) + 1;
+    }
+    return counts;
+  } catch {
+    return {};
+  }
 }
 
 export async function getChapterById(id: string) {
