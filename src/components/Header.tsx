@@ -50,6 +50,17 @@ export function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-8 text-center text-sm text-ink-500">
         <p>© {new Date().getFullYear()} {siteConfig.siteName} · 原创作品平台</p>
         <p className="mt-1">内容由作者使用 AI 辅助创作，版权归属作者本人</p>
+        <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Link href="/terms" className="hover:text-ink-800 hover:underline">
+            Terms
+          </Link>
+          <Link href="/privacy" className="hover:text-ink-800 hover:underline">
+            Privacy
+          </Link>
+          <Link href="/refund" className="hover:text-ink-800 hover:underline">
+            Refunds
+          </Link>
+        </p>
       </div>
     </footer>
   );
