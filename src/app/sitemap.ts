@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllNovels, getChapterMetas } from "@/lib/novels";
-import { getSiteUrl } from "@/lib/stripe";
+import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();

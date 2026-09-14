@@ -170,7 +170,7 @@ export default async function AdminPage() {
       <section className="mt-10">
         <h2 className="font-serif text-xl font-bold text-ink-950">最近订单</h2>
         {purchases.length === 0 ? (
-          <p className="mt-4 text-sm text-ink-500">暂无订单（Stripe 未配置时正常）</p>
+          <p className="mt-4 text-sm text-ink-500">暂无订单（Paddle 未配置时正常）</p>
         ) : (
           <div className="mt-4 overflow-x-auto rounded-2xl border border-ink-200 bg-white">
             <table className="min-w-full text-left text-sm">

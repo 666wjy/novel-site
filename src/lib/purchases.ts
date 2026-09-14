@@ -95,7 +95,7 @@ export async function hasNovelAccess(email: string, novelSlug: string): Promise<
   return false;
 }
 
-async function getPurchasesByEmail(email: string): Promise<PurchaseRecord[]> {
+export async function getPurchasesByEmail(email: string): Promise<PurchaseRecord[]> {
   if (isDatabaseEnabled()) {
     const db = getDb();
     const rows = await db.select().from(purchasesTable).where(eq(purchasesTable.email, email));

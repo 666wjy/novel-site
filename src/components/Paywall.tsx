@@ -75,7 +75,7 @@ export function Paywall({ novelSlug, novelTitle, priceLabel, chapterTitle }: Pay
         </button>
       </div>
 
-      <p className="mt-4 text-xs text-ink-400">支付由 Stripe 安全处理 · 支持信用卡</p>
+      <p className="mt-4 text-xs text-ink-400">Payments secured by Paddle · Cards &amp; more</p>
     </div>
   );
 }

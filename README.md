@@ -1,18 +1,19 @@
 # 原创小说阅读站 · 部署指南
 
-一个支持 **自有小说 + 前几章免费 + Stripe 付费解锁** 的海外阅读网站。
+一个支持 **自有小说 + 前几章免费 + Paddle 付费解锁** 的海外阅读网站。
 
 ## 功能
 
 - 首页展示全部小说
 - 每本书前 N 章免费（默认 3 章，可在 `novels.json` 配置）
 - 超出免费章节显示付费墙
-- Stripe 支付：单本解锁 $2.99 / 全站订阅 $9.99 月
+- Paddle 支付：单本解锁 $2.99 / 全站订阅 $9.99 月
 - PostgreSQL 数据库（Neon）存订单、小说、章节
 - 简易管理后台 `/admin` 查看订单
 - 内容可用 Markdown 管理，导入数据库后线上读取
 
-> 数据库配置见 [DATABASE.md](./DATABASE.md)
+> 数据库配置见 [DATABASE.md](./DATABASE.md)  
+> 收款配置见 [PADDLE.md](./PADDLE.md)
 
 ## 目录结构
 
@@ -45,7 +46,7 @@ npm install
 
 ### 3. 配置环境变量
 
-复制 `.env.example` 为 `.env.local`，填入 Stripe 密钥。
+复制 `.env.example` 为 `.env.local`，按 [PADDLE.md](./PADDLE.md) 填入 Live 密钥与 Price ID。
 
 ### 4. 启动开发服务器
 
@@ -55,20 +56,16 @@ npm run dev
 
 打开 http://localhost:3000
 
-## Stripe 配置步骤
+## Paddle 配置
 
-1. 注册 [Stripe](https://stripe.com)（支持中国身份注册）
-2. 进入 Dashboard → **Products**，创建两个产品：
-   - **单本解锁** — 一次性 $2.99 → 复制 Price ID 到 `STRIPE_PRICE_NOVEL_UNLOCK`
-   - **全站订阅** —  recurring $9.99/月 → 复制到 `STRIPE_PRICE_SUBSCRIPTION`
-3. 复制 API Keys 到 `.env.local`
-4. 本地测试 Webhook（可选）：
-   ```bash
-   stripe listen --forward-to localhost:3000/api/webhook
-   ```
-   把输出的 `whsec_...` 填入 `STRIPE_WEBHOOK_SECRET`
+完整步骤见 [PADDLE.md](./PADDLE.md)。摘要：
 
-支付成功后会跳转到 `/success` 页面，自动解锁。
+1. 注册 [Paddle](https://www.paddle.com)，在 **Live** 创建单本 / 订阅价格
+2. 复制 Price ID（`pri_...`）、API Key、Webhook Secret
+3. Default payment link 指向站点 `/success`，配置 Webhook
+4. 写入 `.env.local` / Netlify 并部署
+
+支付成功后跳转 `/success`，Webhook 写入订单后自动解锁。
 
 ## 如何添加自己的小说
 
@@ -134,11 +131,11 @@ Vercel → Project → Settings → Domains → 添加域名
 
 ### Stripe Webhook（生产环境）
 
-Stripe Dashboard → Webhooks → Add endpoint：
+Paddle Dashboard → Developer tools → Notifications：
 
 - URL: `https://yourdomain.com/api/webhook`
-- Events: `checkout.session.completed`
-- 复制 Signing secret 到 Vercel 环境变量
+- Events: `transaction.completed`, `subscription.activated`
+- 把 Endpoint secret 写入环境变量 `PADDLE_WEBHOOK_SECRET`
 
 ## 其他部署选项
 
@@ -157,17 +154,17 @@ Stripe Dashboard → Webhooks → Add endpoint：
 
 ## 常见问题
 
-**Q: 不配置 Stripe 能看免费章吗？**  
-A: 可以。前 3 章不依赖 Stripe，只有付费章需要。
+**Q: 不配置 Paddle 能看免费章吗？**  
+A: 可以。前 3 章不依赖支付，只有付费章需要。
 
 **Q: 购买记录存在哪？**  
-A: 本地 `data/purchases.json`。生产环境建议后续换 SQLite 或 PostgreSQL。
+A: 有 `DATABASE_URL` 时存 Neon `purchases` 表；否则本地 `data/purchases.json`。
 
 **Q: 怎么改免费章节数？**  
-A: 修改 `novels.json` 里该书的 `freeChapters` 字段。
+A: 修改 `novels.json` 里该书的 `freeChapters` 字段（或后台改库）。
 
 **Q: 怎么改价格？**  
-A: 在 Stripe Dashboard 改 Product 价格，并更新 `priceLabel` 显示文字。
+A: 在 Paddle Catalog 改 Price，并更新站内 `priceLabel` 显示文字。
 
 ---
 

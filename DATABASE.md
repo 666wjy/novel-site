@@ -59,7 +59,7 @@ Environment variables 添加：
 |----|--------|
 | `novels` | 书名、作者、简介、免费章数、价格 |
 | `chapters` | 章节标题、序号、**正文** |
-| `purchases` | Stripe 订单 |
+| `purchases` | 支付订单（Paddle） |
 
 ## 六、两种添加小说方式
 

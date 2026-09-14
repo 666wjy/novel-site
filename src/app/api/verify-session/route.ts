@@ -1,49 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
-import { addPurchase, findPurchaseBySession, getAccessToken } from "@/lib/purchases";
+import { getAccessToken, getPurchasesByEmail, findPurchaseBySession } from "@/lib/purchases";
 
+/**
+ * After Paddle redirect, unlock from webhook-written purchases.
+ * Success page retries until the webhook lands.
+ */
 export async function GET(req: NextRequest) {
+  const email = (req.nextUrl.searchParams.get("email") || "").toLowerCase().trim();
+  const type = req.nextUrl.searchParams.get("type") as "novel_unlock" | "subscription" | null;
+  const novelSlug = req.nextUrl.searchParams.get("novel") || undefined;
   const sessionId = req.nextUrl.searchParams.get("session_id");
-  if (!sessionId) {
-    return NextResponse.json({ error: "Missing session_id" }, { status: 400 });
-  }
 
-  try {
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    if (session.payment_status !== "paid" && session.status !== "complete") {
-      return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
-    }
-
-    const email = (session.metadata?.email || session.customer_email || "").toLowerCase();
-    const type = session.metadata?.type as "novel_unlock" | "subscription";
-    const novelSlug = session.metadata?.novelSlug || undefined;
-
-    if (!email || !type) {
-      return NextResponse.json({ error: "Invalid session metadata" }, { status: 400 });
-    }
-
-    if (!(await findPurchaseBySession(sessionId))) {
-      await addPurchase({
-        email,
-        type,
-        novelSlug: type === "novel_unlock" ? novelSlug : undefined,
-        stripeSessionId: sessionId,
-        expiresAt:
-          type === "subscription"
-            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-            : undefined,
+  if (sessionId) {
+    const existing = await findPurchaseBySession(sessionId);
+    if (existing) {
+      return NextResponse.json({
+        email: existing.email,
+        token: getAccessToken(existing.email),
+        novelSlug: existing.novelSlug ?? null,
       });
     }
-
-    return NextResponse.json({
-      email,
-      token: getAccessToken(email),
-      novelSlug: type === "novel_unlock" ? novelSlug : null,
-    });
-  } catch (err) {
-    console.error("Verify session error:", err);
-    return NextResponse.json({ error: "Verification failed" }, { status: 500 });
+    return NextResponse.json({ error: "Payment not completed yet" }, { status: 404 });
   }
+
+  if (!email || !type) {
+    return NextResponse.json({ error: "Missing email or type" }, { status: 400 });
+  }
+
+  const purchases = await getPurchasesByEmail(email);
+  const now = Date.now();
+
+  const match = purchases.find((p) => {
+    if (type === "subscription") {
+      return p.type === "subscription" && (!p.expiresAt || new Date(p.expiresAt).getTime() > now);
+    }
+    return p.type === "novel_unlock" && (!novelSlug || p.novelSlug === novelSlug);
+  });
+
+  if (!match) {
+    return NextResponse.json({ error: "Payment not completed yet" }, { status: 404 });
+  }
+
+  return NextResponse.json({
+    email,
+    token: getAccessToken(email),
+    novelSlug: type === "novel_unlock" ? novelSlug || match.novelSlug || null : null,
+  });
 }

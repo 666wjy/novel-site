@@ -1,48 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
-import { addPurchase, getAccessToken } from "@/lib/purchases";
+import { verifyPaddleWebhookSignature } from "@/lib/paddle";
+import { addPurchase } from "@/lib/purchases";
+
+type CustomData = {
+  type?: string;
+  novelSlug?: string;
+  email?: string;
+};
 
 export async function POST(req: NextRequest) {
-  const stripe = getStripe();
-  const body = await req.text();
-  const sig = req.headers.get("stripe-signature");
+  const rawBody = await req.text();
+  const signature = req.headers.get("paddle-signature");
 
-  if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+  if (!process.env.PADDLE_WEBHOOK_SECRET) {
     return NextResponse.json({ error: "Webhook not configured" }, { status: 400 });
   }
 
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error("Webhook signature error:", err);
+  if (!verifyPaddleWebhookSignature(rawBody, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const email = (session.metadata?.email || session.customer_email || "").toLowerCase();
-    const type = session.metadata?.type as "novel_unlock" | "subscription";
-    const novelSlug = session.metadata?.novelSlug || undefined;
+  let payload: {
+    event_id?: string;
+    event_type?: string;
+    data?: {
+      id?: string;
+      status?: string;
+      custom_data?: CustomData | null;
+      customer_id?: string | null;
+      details?: { totals?: unknown };
+      billing_period?: { ends_at?: string | null } | null;
+      current_billing_period?: { ends_at?: string | null } | null;
+    };
+  };
 
-    if (email && type) {
-      await addPurchase({
-        email,
-        type,
-        novelSlug: type === "novel_unlock" ? novelSlug : undefined,
-        stripeSessionId: session.id,
-        expiresAt:
-          type === "subscription"
-            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-            : undefined,
-      });
-    }
+  try {
+    payload = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const eventType = payload.event_type || "";
+  const data = payload.data || {};
+  const custom = data.custom_data || {};
+  const email = (custom.email || "").toLowerCase().trim();
+  const type = custom.type as "novel_unlock" | "subscription" | undefined;
+  const novelSlug = custom.novelSlug || undefined;
+  const sessionId = data.id || payload.event_id || "";
+
+  if (!email || !type || !sessionId) {
+    return NextResponse.json({ received: true });
+  }
+
+  if (eventType === "transaction.completed" && type === "novel_unlock") {
+    await addPurchase({
+      email,
+      type: "novel_unlock",
+      novelSlug,
+      stripeSessionId: sessionId,
+    });
+  }
+
+  if (
+    (eventType === "transaction.completed" ||
+      eventType === "subscription.activated" ||
+      eventType === "subscription.created") &&
+    type === "subscription"
+  ) {
+    const endsAt =
+      data.current_billing_period?.ends_at ||
+      data.billing_period?.ends_at ||
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    await addPurchase({
+      email,
+      type: "subscription",
+      stripeSessionId: `${sessionId}:${eventType}`,
+      expiresAt: endsAt,
+    });
   }
 
   return NextResponse.json({ received: true });
 }
 
 export async function GET(req: NextRequest) {
+  const { getAccessToken } = await import("@/lib/purchases");
   const email = req.nextUrl.searchParams.get("email");
   if (!email) {
     return NextResponse.json({ error: "Missing email" }, { status: 400 });

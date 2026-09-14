@@ -32,7 +32,7 @@ export default function PricingPage() {
       </div>
 
       <p className="mt-8 text-center text-sm text-ink-500">
-        前往任意小说目录，输入邮箱即可跳转 Stripe 安全支付
+        Open any novel, enter your email, and pay securely via Paddle
       </p>
       <p className="mt-4 text-center">
         <Link href="/" className="text-accent hover:underline">

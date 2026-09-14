@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getNovel } from "@/lib/novels";
-import { getStripe, getSiteUrl } from "@/lib/stripe";
+import { createPaddleCheckout, getSiteUrl } from "@/lib/paddle";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    const stripe = getStripe();
     const siteUrl = getSiteUrl();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (type === "novel") {
       if (!novelSlug) {
@@ -27,38 +27,42 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Novel not found" }, { status: 404 });
       }
 
-      const priceId = process.env.STRIPE_PRICE_NOVEL_UNLOCK;
+      const priceId = process.env.PADDLE_PRICE_NOVEL_UNLOCK;
       if (!priceId) {
-        return NextResponse.json({ error: "Stripe price not configured" }, { status: 500 });
+        return NextResponse.json({ error: "Paddle novel price not configured" }, { status: 500 });
       }
 
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        customer_email: email,
-        line_items: [{ price: priceId, quantity: 1 }],
-        metadata: { type: "novel_unlock", novelSlug, email },
-        success_url: `${siteUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${siteUrl}/novel/${novelSlug}`,
+      const checkout = await createPaddleCheckout({
+        priceId,
+        email: normalizedEmail,
+        successUrl: `${siteUrl}/success?email=${encodeURIComponent(normalizedEmail)}&type=novel_unlock&novel=${encodeURIComponent(novelSlug)}`,
+        custom: {
+          type: "novel_unlock",
+          novelSlug,
+          email: normalizedEmail,
+        },
       });
 
-      return NextResponse.json({ url: session.url });
+      return NextResponse.json({ url: checkout.url });
     }
 
-    const subPriceId = process.env.STRIPE_PRICE_SUBSCRIPTION;
+    const subPriceId = process.env.PADDLE_PRICE_SUBSCRIPTION;
     if (!subPriceId) {
-      return NextResponse.json({ error: "Subscription price not configured" }, { status: 500 });
+      return NextResponse.json({ error: "Paddle subscription price not configured" }, { status: 500 });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer_email: email,
-      line_items: [{ price: subPriceId, quantity: 1 }],
-      metadata: { type: "subscription", email, novelSlug: novelSlug || "" },
-      success_url: `${siteUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/pricing`,
+    const checkout = await createPaddleCheckout({
+      priceId: subPriceId,
+      email: normalizedEmail,
+      successUrl: `${siteUrl}/success?email=${encodeURIComponent(normalizedEmail)}&type=subscription`,
+      custom: {
+        type: "subscription",
+        email: normalizedEmail,
+        novelSlug: novelSlug || "",
+      },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: checkout.url });
   } catch (err) {
     console.error("Checkout error:", err);
     return NextResponse.json(
