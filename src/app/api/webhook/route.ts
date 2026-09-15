@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
-  if (eventType === "transaction.completed" && type === "novel_unlock") {
+  if (
+    (eventType === "transaction.completed" || eventType === "transaction.paid") &&
+    type === "novel_unlock"
+  ) {
     await addPurchase({
       email,
       type: "novel_unlock",
@@ -63,6 +66,7 @@ export async function POST(req: NextRequest) {
 
   if (
     (eventType === "transaction.completed" ||
+      eventType === "transaction.paid" ||
       eventType === "subscription.activated" ||
       eventType === "subscription.created") &&
     type === "subscription"

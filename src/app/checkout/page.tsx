@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Script from "next/script";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 declare global {
   interface Window {
@@ -18,8 +19,11 @@ declare global {
 
 const PURCHASE_KEY = "sf_paddle_purchase";
 
-function buildSuccessUrl(): string {
+function buildSuccessUrl(transactionId?: string): string {
   const site = window.location.origin;
+  const params = new URLSearchParams();
+  if (transactionId) params.set("txn", transactionId);
+
   try {
     const raw = sessionStorage.getItem(PURCHASE_KEY);
     if (raw) {
@@ -28,20 +32,49 @@ function buildSuccessUrl(): string {
         type?: string;
         novelSlug?: string | null;
       };
-      const params = new URLSearchParams();
       if (data.email) params.set("email", data.email);
       if (data.type) params.set("type", data.type);
       if (data.novelSlug) params.set("novel", data.novelSlug);
-      const q = params.toString();
-      return q ? `${site}/success?${q}` : `${site}/success`;
     }
   } catch {
     // ignore
   }
-  return `${site}/success`;
+
+  const q = params.toString();
+  return q ? `${site}/success?${q}` : `${site}/success`;
 }
 
-function openCheckout(transactionId: string) {
+function goSuccess(transactionId: string) {
+  window.location.href = buildSuccessUrl(transactionId);
+}
+
+async function pollPaid(transactionId: string): Promise<boolean> {
+  for (let i = 0; i < 30; i++) {
+    try {
+      const res = await fetch(`/api/paddle/transaction?id=${encodeURIComponent(transactionId)}`);
+      const data = await res.json();
+      if (res.ok && data.paid) {
+        if (data.email) {
+          sessionStorage.setItem(
+            PURCHASE_KEY,
+            JSON.stringify({
+              email: data.email,
+              type: data.type,
+              novelSlug: data.novelSlug,
+            })
+          );
+        }
+        return true;
+      }
+    } catch {
+      // keep polling
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  return false;
+}
+
+function openCheckout(transactionId: string, onMessage: (msg: string) => void) {
   const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
   if (!token || !window.Paddle) {
     throw new Error("Paddle.js not ready");
@@ -49,19 +82,32 @@ function openCheckout(transactionId: string) {
 
   window.Paddle.Initialize({
     token,
+    eventCallback: (event: { name?: string }) => {
+      if (event?.name === "checkout.completed") {
+        onMessage("Payment received. Confirming...");
+        // WeChat may take a few minutes to fully capture; still send user to success.
+        setTimeout(() => goSuccess(transactionId), 1500);
+      }
+    },
     checkout: {
       settings: {
         displayMode: "overlay",
         theme: "light",
-        successUrl: buildSuccessUrl(),
+        successUrl: buildSuccessUrl(transactionId),
       },
     },
   });
 
-  window.Paddle.Checkout.open({ transactionId });
+  window.Paddle.Checkout.open({
+    transactionId,
+    settings: {
+      successUrl: buildSuccessUrl(transactionId),
+    },
+  });
 }
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const [message, setMessage] = useState("Loading checkout...");
   const [failed, setFailed] = useState(false);
 
@@ -80,14 +126,24 @@ export default function CheckoutPage() {
       return;
     }
 
+    let cancelled = false;
     let tries = 0;
     const timer = setInterval(() => {
       tries += 1;
       if (window.Paddle) {
         clearInterval(timer);
+        // If WeChat already paid, don't hang forever on overlay.
+        void pollPaid(transactionId).then((paid) => {
+          if (cancelled) return;
+          if (paid) {
+            goSuccess(transactionId);
+            return;
+          }
+        });
+
         try {
-          openCheckout(transactionId);
-          setMessage("Opening Paddle checkout...");
+          openCheckout(transactionId, setMessage);
+          setMessage("Opening Paddle checkout... If you already paid with WeChat, wait up to 10 minutes or refresh.");
         } catch (e) {
           setFailed(true);
           setMessage(e instanceof Error ? e.message : "Failed to open checkout");
@@ -99,8 +155,11 @@ export default function CheckoutPage() {
       }
     }, 200);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [router]);
 
   return (
     <div className="py-20 text-center">
@@ -108,7 +167,7 @@ export default function CheckoutPage() {
       {!failed && (
         <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
       )}
-      <p className="mt-4 text-ink-600">{message}</p>
+      <p className="mt-4 mx-auto max-w-md text-ink-600">{message}</p>
       {failed && (
         <Link href="/" className="mt-4 inline-block text-accent hover:underline">
           Back to home

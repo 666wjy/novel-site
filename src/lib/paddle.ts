@@ -124,3 +124,71 @@ export async function createPaddleCheckout(options: CreateTransactionOptions): P
 
   return { id: json.data.id, url };
 }
+
+export async function getPaddleTransaction(transactionId: string) {
+  const res = await fetch(`${getApiBase()}/transactions/${transactionId}`, {
+    headers: {
+      Authorization: `Bearer ${getApiKey()}`,
+      "Paddle-Version": "1",
+    },
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  return (await res.json()) as {
+    data?: {
+      id: string;
+      status: string;
+      custom_data?: {
+        type?: string;
+        novelSlug?: string;
+        email?: string;
+      } | null;
+    };
+  };
+}
+
+export async function fulfillPaddleTransaction(transactionId: string): Promise<{
+  ok: boolean;
+  status?: string;
+  email?: string;
+  type?: string;
+  novelSlug?: string | null;
+}> {
+  const json = await getPaddleTransaction(transactionId);
+  const data = json?.data;
+  if (!data) return { ok: false };
+
+  const status = data.status;
+  const custom = data.custom_data || {};
+  const email = (custom.email || "").toLowerCase().trim();
+  const type = custom.type as "novel_unlock" | "subscription" | undefined;
+  const novelSlug = custom.novelSlug || undefined;
+
+  // paid/completed both mean money captured (WeChat may briefly be paid before completed)
+  if ((status === "completed" || status === "paid") && email && type) {
+    const { addPurchase } = await import("@/lib/purchases");
+    if (type === "novel_unlock") {
+      await addPurchase({
+        email,
+        type: "novel_unlock",
+        novelSlug,
+        stripeSessionId: data.id,
+      });
+    } else {
+      await addPurchase({
+        email,
+        type: "subscription",
+        stripeSessionId: data.id,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+  }
+
+  return {
+    ok: status === "completed" || status === "paid",
+    status,
+    email: email || undefined,
+    type,
+    novelSlug: novelSlug ?? null,
+  };
+}

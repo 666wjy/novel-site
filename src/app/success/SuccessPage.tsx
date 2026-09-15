@@ -33,6 +33,7 @@ export default function SuccessPage() {
     let type = searchParams.get("type");
     let novel = searchParams.get("novel");
     const sessionId = searchParams.get("session_id");
+    const txn = searchParams.get("txn");
 
     if ((!email || !type) && typeof window !== "undefined") {
       try {
@@ -52,19 +53,44 @@ export default function SuccessPage() {
       }
     }
 
-    if (!sessionId && (!email || !type)) {
-      setStatus("error");
-      return;
-    }
+    async function run() {
+      if (txn?.startsWith("txn_")) {
+        // Prefer confirming via Paddle API (helps WeChat deferred capture)
+        for (let i = 0; i < 20; i++) {
+          const res = await fetch(`/api/paddle/transaction?id=${encodeURIComponent(txn)}`);
+          const data = await res.json();
+          if (res.ok && data.paid && data.email) {
+            document.cookie = `reader_email=${encodeURIComponent(data.email)}; path=/; max-age=31536000; SameSite=Lax`;
+            document.cookie = `reader_token=${data.token}; path=/; max-age=31536000; SameSite=Lax`;
+            try {
+              sessionStorage.removeItem("sf_paddle_purchase");
+            } catch {
+              // ignore
+            }
+            setNovelSlug(data.novelSlug);
+            setStatus("ok");
+            setTimeout(() => {
+              router.push(data.novelSlug ? `/novel/${data.novelSlug}` : "/");
+            }, 2000);
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+      }
 
-    const params = new URLSearchParams();
-    if (sessionId) params.set("session_id", sessionId);
-    if (email) params.set("email", email);
-    if (type) params.set("type", type);
-    if (novel) params.set("novel", novel);
+      if (!sessionId && (!email || !type)) {
+        setStatus("error");
+        return;
+      }
 
-    verifyWithRetry(params)
-      .then((data) => {
+      const params = new URLSearchParams();
+      if (sessionId) params.set("session_id", sessionId);
+      if (email) params.set("email", email);
+      if (type) params.set("type", type);
+      if (novel) params.set("novel", novel);
+
+      try {
+        const data = await verifyWithRetry(params);
         document.cookie = `reader_email=${encodeURIComponent(data.email)}; path=/; max-age=31536000; SameSite=Lax`;
         document.cookie = `reader_token=${data.token}; path=/; max-age=31536000; SameSite=Lax`;
         try {
@@ -77,8 +103,12 @@ export default function SuccessPage() {
         setTimeout(() => {
           router.push(data.novelSlug ? `/novel/${data.novelSlug}` : "/");
         }, 2000);
-      })
-      .catch(() => setStatus("error"));
+      } catch {
+        setStatus("error");
+      }
+    }
+
+    void run();
   }, [searchParams, router]);
 
   return (
