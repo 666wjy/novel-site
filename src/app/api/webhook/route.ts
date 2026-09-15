@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyPaddleWebhookSignature } from "@/lib/paddle";
 import { addPurchase } from "@/lib/purchases";
 
+export const runtime = "nodejs";
+
 type CustomData = {
   type?: string;
   novelSlug?: string;

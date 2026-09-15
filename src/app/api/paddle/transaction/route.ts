@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { fulfillPaddleTransaction } from "@/lib/paddle";
 import { getAccessToken } from "@/lib/purchases";
 
+export const runtime = "nodejs";
+
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id?.startsWith("txn_")) {
