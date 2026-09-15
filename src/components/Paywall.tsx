@@ -9,6 +9,8 @@ interface PaywallProps {
   chapterTitle: string;
 }
 
+const PURCHASE_KEY = "sf_paddle_purchase";
+
 export function Paywall({ novelSlug, novelTitle, priceLabel, chapterTitle }: PaywallProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState<"novel" | "sub" | null>(null);
@@ -30,6 +32,16 @@ export function Paywall({ novelSlug, novelTitle, priceLabel, chapterTitle }: Pay
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "创建支付失败");
+
+      sessionStorage.setItem(
+        PURCHASE_KEY,
+        JSON.stringify({
+          email: data.email,
+          type: data.type,
+          novelSlug: data.novelSlug,
+        })
+      );
+
       window.location.href = data.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "支付失败，请稍后重试");

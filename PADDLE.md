@@ -36,10 +36,10 @@ Dashboard 顶部应显示 **You're in Live**（不要 Switch to Sandbox）。
 
 **Checkout → Checkout settings**
 
-1. **Default payment link** 填：
+1. **Default payment link** 必须填结账页（不是 success）：
 
 ```text
-https://incredible-youtiao-87a037.netlify.app/success
+https://incredible-youtiao-87a037.netlify.app/checkout
 ```
 
 2. 若要求 **Approved domains**，添加：
@@ -48,7 +48,11 @@ https://incredible-youtiao-87a037.netlify.app/success
 incredible-youtiao-87a037.netlify.app
 ```
 
-保存并等待审核通过（有的账号需 Paddle 审核域名）。
+保存并等待审核通过。
+
+3. **Client-side token**（打开付款弹窗需要）  
+   Developer tools → Authentication → **Client-side tokens** → 创建 Live token（`live_...`）  
+   → 环境变量 `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`
 
 ---
 
@@ -90,6 +94,7 @@ PADDLE_API_KEY=pdl_live_...
 PADDLE_PRICE_NOVEL_UNLOCK=pri_...
 PADDLE_PRICE_SUBSCRIPTION=pri_...
 PADDLE_WEBHOOK_SECRET=pdl_ntfsec_...
+NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=live_...
 NEXT_PUBLIC_SITE_URL=https://incredible-youtiao-87a037.netlify.app
 ```
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getNovel } from "@/lib/novels";
-import { createPaddleCheckout, getSiteUrl } from "@/lib/paddle";
+import { createPaddleCheckout } from "@/lib/paddle";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    const siteUrl = getSiteUrl();
     const normalizedEmail = email.trim().toLowerCase();
 
     if (type === "novel") {
@@ -35,7 +34,6 @@ export async function POST(req: NextRequest) {
       const checkout = await createPaddleCheckout({
         priceId,
         email: normalizedEmail,
-        successUrl: `${siteUrl}/success?email=${encodeURIComponent(normalizedEmail)}&type=novel_unlock&novel=${encodeURIComponent(novelSlug)}`,
         custom: {
           type: "novel_unlock",
           novelSlug,
@@ -43,7 +41,13 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return NextResponse.json({ url: checkout.url });
+      return NextResponse.json({
+        url: checkout.url,
+        transactionId: checkout.id,
+        email: normalizedEmail,
+        type: "novel_unlock",
+        novelSlug,
+      });
     }
 
     const subPriceId = process.env.PADDLE_PRICE_SUBSCRIPTION;
@@ -54,7 +58,6 @@ export async function POST(req: NextRequest) {
     const checkout = await createPaddleCheckout({
       priceId: subPriceId,
       email: normalizedEmail,
-      successUrl: `${siteUrl}/success?email=${encodeURIComponent(normalizedEmail)}&type=subscription`,
       custom: {
         type: "subscription",
         email: normalizedEmail,
@@ -62,7 +65,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: checkout.url });
+    return NextResponse.json({
+      url: checkout.url,
+      transactionId: checkout.id,
+      email: normalizedEmail,
+      type: "subscription",
+      novelSlug: novelSlug || null,
+    });
   } catch (err) {
     console.error("Checkout error:", err);
     return NextResponse.json(

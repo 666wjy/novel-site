@@ -29,10 +29,28 @@ export default function SuccessPage() {
   const [novelSlug, setNovelSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    const email = searchParams.get("email");
-    const type = searchParams.get("type");
-    const novel = searchParams.get("novel");
+    let email = searchParams.get("email");
+    let type = searchParams.get("type");
+    let novel = searchParams.get("novel");
     const sessionId = searchParams.get("session_id");
+
+    if ((!email || !type) && typeof window !== "undefined") {
+      try {
+        const raw = sessionStorage.getItem("sf_paddle_purchase");
+        if (raw) {
+          const saved = JSON.parse(raw) as {
+            email?: string;
+            type?: string;
+            novelSlug?: string | null;
+          };
+          email = email || saved.email || null;
+          type = type || saved.type || null;
+          novel = novel || saved.novelSlug || null;
+        }
+      } catch {
+        // ignore
+      }
+    }
 
     if (!sessionId && (!email || !type)) {
       setStatus("error");
@@ -49,6 +67,11 @@ export default function SuccessPage() {
       .then((data) => {
         document.cookie = `reader_email=${encodeURIComponent(data.email)}; path=/; max-age=31536000; SameSite=Lax`;
         document.cookie = `reader_token=${data.token}; path=/; max-age=31536000; SameSite=Lax`;
+        try {
+          sessionStorage.removeItem("sf_paddle_purchase");
+        } catch {
+          // ignore
+        }
         setNovelSlug(data.novelSlug);
         setStatus("ok");
         setTimeout(() => {

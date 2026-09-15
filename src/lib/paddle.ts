@@ -10,7 +10,6 @@ function getApiKey(): string {
 }
 
 function getApiBase(): string {
-  // Live by default; set PADDLE_ENV=sandbox only if you switch later
   return process.env.PADDLE_ENV === "sandbox"
     ? "https://sandbox-api.paddle.com"
     : "https://api.paddle.com";
@@ -42,7 +41,6 @@ interface CreateTransactionOptions {
   priceId: string;
   email: string;
   custom: Record<string, string>;
-  successUrl: string;
 }
 
 interface PaddleTransactionResponse {
@@ -83,14 +81,18 @@ async function ensureCustomerId(email: string): Promise<string | undefined> {
   return created.data?.id;
 }
 
+/** Creates a transaction and returns the hosted checkout URL (default payment link + _ptxn). */
 export async function createPaddleCheckout(options: CreateTransactionOptions): Promise<{ id: string; url: string }> {
+  const siteUrl = getSiteUrl();
+  const paymentLink = `${siteUrl}/checkout`;
   const customerId = await ensureCustomerId(options.email);
+
   const body: Record<string, unknown> = {
     items: [{ price_id: options.priceId, quantity: 1 }],
     collection_mode: "automatic",
     custom_data: options.custom,
     checkout: {
-      url: options.successUrl,
+      url: paymentLink,
     },
   };
   if (customerId) {
@@ -115,7 +117,9 @@ export async function createPaddleCheckout(options: CreateTransactionOptions): P
 
   const url = json.data.checkout?.url;
   if (!url) {
-    throw new Error("Paddle checkout URL missing — set Default payment link / approve your site domain in Paddle");
+    throw new Error(
+      "Paddle checkout URL missing — set Default payment link to https://your-site/checkout and approve the domain"
+    );
   }
 
   return { id: json.data.id, url };
