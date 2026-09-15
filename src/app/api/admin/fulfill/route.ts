@@ -25,12 +25,13 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+      const token = getAccessToken(result.email);
       return NextResponse.json({
-        ok: true,
         ...result,
-        token: getAccessToken(result.email),
+        ok: true,
+        token,
         unlockUrl: result.novelSlug
-          ? `/novel/${result.novelSlug}?unlocked=1&email=${encodeURIComponent(result.email)}&token=${getAccessToken(result.email)}`
+          ? `/novel/${result.novelSlug}?unlocked=1&email=${encodeURIComponent(result.email)}&token=${token}`
           : null,
       });
     }
