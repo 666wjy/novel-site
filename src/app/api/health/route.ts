@@ -14,6 +14,7 @@ export async function GET() {
     paddlePriceNovel: Boolean(process.env.PADDLE_PRICE_NOVEL_UNLOCK),
     accessTokenSecret: Boolean(process.env.ACCESS_TOKEN_SECRET),
     authSecret: Boolean(process.env.AUTH_SECRET),
+    geminiApiKey: Boolean(process.env.GEMINI_API_KEY),
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL || null,
   });
 }

@@ -6,6 +6,7 @@ import { getNovel } from "@/lib/novels";
 import { getAdminChapterList } from "@/lib/novels-admin";
 import { NovelForm } from "@/app/admin/NovelForm";
 import { ChapterListActions } from "./ChapterListActions";
+import { TranslateNovelButton } from "@/components/TranslateNovelButton";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -37,6 +38,10 @@ export default async function AdminNovelPage({ params }: Props) {
         >
           前台预览
         </Link>
+      </div>
+
+      <div className="mt-6">
+        <TranslateNovelButton slug={slug} />
       </div>
 
       <section className="mt-8">
