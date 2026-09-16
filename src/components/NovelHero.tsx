@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { NovelMeta } from "@/lib/types";
 import { NovelCover } from "@/components/NovelCover";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { formatDate } from "@/lib/utils";
 
 interface NovelHeroProps {
@@ -8,6 +9,9 @@ interface NovelHeroProps {
   hasAccess: boolean;
   firstChapterSlug: string | null;
   unlockChapterSlug: string | null;
+  continueChapterSlug?: string | null;
+  loggedIn: boolean;
+  favorited: boolean;
 }
 
 export function NovelHero({
@@ -15,8 +19,14 @@ export function NovelHero({
   hasAccess,
   firstChapterSlug,
   unlockChapterSlug,
+  continueChapterSlug,
+  loggedIn,
+  favorited,
 }: NovelHeroProps) {
   const startHref = firstChapterSlug ? `/novel/${novel.slug}/${firstChapterSlug}` : null;
+  const continueHref = continueChapterSlug
+    ? `/novel/${novel.slug}/${continueChapterSlug}`
+    : startHref;
   const unlockHref = unlockChapterSlug
     ? `/novel/${novel.slug}/${unlockChapterSlug}`
     : startHref;
@@ -75,9 +85,9 @@ export function NovelHero({
 
           <div className="mt-6 flex flex-wrap gap-3">
             {hasAccess ? (
-              startHref && (
+              continueHref && (
                 <Link
-                  href={startHref}
+                  href={continueHref}
                   className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-dark"
                 >
                   继续阅读
@@ -103,6 +113,11 @@ export function NovelHero({
                 )}
               </>
             )}
+            <FavoriteButton
+              novelSlug={novel.slug}
+              initialFavorited={favorited}
+              loggedIn={loggedIn}
+            />
           </div>
 
           {!hasAccess && (

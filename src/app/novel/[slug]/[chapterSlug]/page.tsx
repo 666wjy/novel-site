@@ -15,6 +15,8 @@ import { CommentSection } from "@/components/CommentSection";
 import { ReadingSettings } from "@/components/ReadingSettings";
 import { ChapterBody } from "@/components/ChapterBody";
 import { renderMarkdown } from "@/lib/utils";
+import { getSession } from "@/lib/auth";
+import { upsertProgress } from "@/lib/library";
 
 interface Props {
   params: Promise<{ slug: string; chapterSlug: string }>;
@@ -36,6 +38,10 @@ export default async function ChapterPage({ params }: Props) {
   const hasAccess = await checkReaderAccess(slug);
   const canRead = isChapterFree(novel, chapter.order) || hasAccess;
   const { prev, next } = await getAdjacentChapters(slug, chapterSlug);
+  const session = await getSession();
+  if (session) {
+    await upsertProgress(session.id, slug, chapterSlug);
+  }
 
   return (
     <article className="mx-auto max-w-2xl">
@@ -73,6 +79,7 @@ export default async function ChapterPage({ params }: Props) {
           novelTitle={novel.title}
           priceLabel={novel.priceLabel}
           chapterTitle={chapter.title}
+          loggedIn={Boolean(session)}
         />
       )}
 

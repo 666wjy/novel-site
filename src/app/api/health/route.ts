@@ -13,6 +13,7 @@ export async function GET() {
     paddleClientToken: Boolean(process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN),
     paddlePriceNovel: Boolean(process.env.PADDLE_PRICE_NOVEL_UNLOCK),
     accessTokenSecret: Boolean(process.env.ACCESS_TOKEN_SECRET),
+    authSecret: Boolean(process.env.AUTH_SECRET),
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL || null,
   });
 }

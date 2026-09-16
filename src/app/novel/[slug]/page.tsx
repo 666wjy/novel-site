@@ -6,6 +6,10 @@ import { getNovel, getChapterMetas, isChapterFree } from "@/lib/novels";
 import { checkReaderAccess } from "@/lib/access";
 import { UnlockBanner } from "@/components/UnlockBanner";
 import { NovelHero } from "@/components/NovelHero";
+import { ClaimHint } from "@/components/ClaimHint";
+import { getSession } from "@/lib/auth";
+import { getLegacyReaderEmail } from "@/lib/access";
+import { getProgress, isFavorited } from "@/lib/library";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -25,21 +29,29 @@ export default async function NovelPage({ params }: Props) {
 
   const chapters = await getChapterMetas(slug);
   const hasAccess = await checkReaderAccess(slug);
+  const session = await getSession();
+  const legacyEmail = await getLegacyReaderEmail();
   const firstChapter = chapters[0] ?? null;
   const firstPaidChapter =
     chapters.find((ch) => !isChapterFree(novel, ch.order)) ?? null;
+  const progress = session ? await getProgress(session.id, slug) : null;
+  const favorited = session ? await isFavorited(session.id, slug) : false;
 
   return (
     <div>
       <Suspense fallback={null}>
         <UnlockBanner />
       </Suspense>
+      {legacyEmail && <ClaimHint email={legacyEmail} />}
 
       <NovelHero
         novel={novel}
         hasAccess={hasAccess}
         firstChapterSlug={firstChapter?.slug ?? null}
         unlockChapterSlug={firstPaidChapter?.slug ?? firstChapter?.slug ?? null}
+        continueChapterSlug={progress?.chapterSlug ?? firstChapter?.slug ?? null}
+        loggedIn={Boolean(session)}
+        favorited={favorited}
       />
 
       <section className="mt-10">

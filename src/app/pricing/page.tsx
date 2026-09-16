@@ -32,7 +32,7 @@ export default function PricingPage() {
       </div>
 
       <p className="mt-8 text-center text-sm text-ink-500">
-        Open any novel, enter your email, and pay securely via Paddle
+        Open any novel, log in, and pay securely via Paddle
       </p>
       <p className="mt-4 text-center">
         <Link href="/" className="text-accent hover:underline">

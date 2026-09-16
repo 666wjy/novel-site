@@ -64,3 +64,45 @@ export const comments = pgTable("comments", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const users = pgTable(
+  "users",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    passwordHash: text("password_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("users_email_idx").on(table.email)]
+);
+
+export const favorites = pgTable(
+  "favorites",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    novelSlug: text("novel_slug")
+      .notNull()
+      .references(() => novels.slug, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("favorites_user_novel_idx").on(table.userId, table.novelSlug)]
+);
+
+export const readingProgress = pgTable(
+  "reading_progress",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    novelSlug: text("novel_slug")
+      .notNull()
+      .references(() => novels.slug, { onDelete: "cascade" }),
+    chapterSlug: text("chapter_slug").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("progress_user_novel_idx").on(table.userId, table.novelSlug)]
+);

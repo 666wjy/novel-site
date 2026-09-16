@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { getAllNovels } from "@/lib/novels";
+import { getAllNovels, getChapterMetas } from "@/lib/novels";
 import { siteConfig } from "@/lib/site-config";
 import { NovelCard } from "@/components/NovelCard";
+import { getSession } from "@/lib/auth";
+import { listFavoriteSlugs, listProgress } from "@/lib/library";
 
 export const metadata: Metadata = {
   title: siteConfig.siteName,
@@ -10,6 +12,15 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const novels = await getAllNovels();
+  const session = await getSession();
+  const favoriteSet = new Set(session ? await listFavoriteSlugs(session.id) : []);
+  const progressRows = session ? await listProgress(session.id) : [];
+  const progressLabel: Record<string, string> = {};
+  for (const row of progressRows) {
+    const chapters = await getChapterMetas(row.novelSlug);
+    const chapter = chapters.find((c) => c.slug === row.chapterSlug);
+    if (chapter) progressLabel[row.novelSlug] = `第 ${chapter.order} 章`;
+  }
 
   return (
     <div>
@@ -35,7 +46,12 @@ export default async function HomePage() {
         ) : (
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             {novels.map((novel) => (
-              <NovelCard key={novel.slug} novel={novel} />
+              <NovelCard
+                key={novel.slug}
+                novel={novel}
+                favorited={favoriteSet.has(novel.slug)}
+                progressLabel={progressLabel[novel.slug]}
+              />
             ))}
           </div>
         )}

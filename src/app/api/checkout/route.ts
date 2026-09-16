@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getNovel } from "@/lib/novels";
 import { createPaddleCheckout } from "@/lib/paddle";
+import { getSession } from "@/lib/auth";
+
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "请先登录后再解锁" }, { status: 401 });
+    }
+
     const body = await req.json();
-    const { email, novelSlug, type } = body as {
-      email: string;
+    const { novelSlug, type } = body as {
       novelSlug?: string;
       type: "novel" | "subscription";
     };
 
-    if (!email?.includes("@")) {
-      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = session.email;
 
     if (type === "novel") {
       if (!novelSlug) {

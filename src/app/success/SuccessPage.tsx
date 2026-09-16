@@ -60,8 +60,6 @@ export default function SuccessPage() {
           const res = await fetch(`/api/paddle/transaction?id=${encodeURIComponent(txn)}`);
           const data = await res.json();
           if (res.ok && data.paid && data.email) {
-            document.cookie = `reader_email=${encodeURIComponent(data.email)}; path=/; max-age=31536000; SameSite=Lax`;
-            document.cookie = `reader_token=${data.token}; path=/; max-age=31536000; SameSite=Lax`;
             try {
               sessionStorage.removeItem("sf_paddle_purchase");
             } catch {
@@ -70,7 +68,7 @@ export default function SuccessPage() {
             setNovelSlug(data.novelSlug);
             setStatus("ok");
             setTimeout(() => {
-              router.push(data.novelSlug ? `/novel/${data.novelSlug}` : "/");
+              router.push(data.novelSlug ? `/novel/${data.novelSlug}` : "/library");
             }, 2000);
             return;
           }
@@ -91,8 +89,6 @@ export default function SuccessPage() {
 
       try {
         const data = await verifyWithRetry(params);
-        document.cookie = `reader_email=${encodeURIComponent(data.email)}; path=/; max-age=31536000; SameSite=Lax`;
-        document.cookie = `reader_token=${data.token}; path=/; max-age=31536000; SameSite=Lax`;
         try {
           sessionStorage.removeItem("sf_paddle_purchase");
         } catch {
@@ -101,7 +97,7 @@ export default function SuccessPage() {
         setNovelSlug(data.novelSlug);
         setStatus("ok");
         setTimeout(() => {
-          router.push(data.novelSlug ? `/novel/${data.novelSlug}` : "/");
+          router.push(data.novelSlug ? `/novel/${data.novelSlug}` : "/library");
         }, 2000);
       } catch {
         setStatus("error");
@@ -134,7 +130,7 @@ export default function SuccessPage() {
         <>
           <h1 className="font-serif text-2xl font-bold text-ink-950">Verification pending</h1>
           <p className="mt-2 text-ink-600">
-            Payment may still be processing. Refresh in a minute, or open the novel again with the same email.
+            Payment may still be processing. Stay logged in and refresh in a minute.
           </p>
           <Link href="/" className="mt-4 inline-block text-accent hover:underline">
             Back to home

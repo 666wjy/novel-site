@@ -1,12 +1,17 @@
 import { cookies } from "next/headers";
-import { hasNovelAccess, verifyAccessToken } from "@/lib/purchases";
+import { getSession } from "@/lib/auth";
+import { hasNovelAccess } from "@/lib/purchases";
 
 export async function checkReaderAccess(novelSlug: string): Promise<boolean> {
-  const cookieStore = await cookies();
-  const email = cookieStore.get("reader_email")?.value;
-  const token = cookieStore.get("reader_token")?.value;
+  const session = await getSession();
+  if (!session) return false;
+  return await hasNovelAccess(session.email, novelSlug);
+}
 
-  if (!email || !token) return false;
-  if (!verifyAccessToken(email, token)) return false;
-  return await hasNovelAccess(email, novelSlug);
+export async function getLegacyReaderEmail(): Promise<string | null> {
+  const session = await getSession();
+  if (session) return null;
+  const store = await cookies();
+  const email = store.get("reader_email")?.value;
+  return email ? decodeURIComponent(email).toLowerCase().trim() : null;
 }

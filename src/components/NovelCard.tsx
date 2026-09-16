@@ -3,7 +3,15 @@ import type { NovelMeta } from "@/lib/types";
 import { NovelCover } from "@/components/NovelCover";
 import { formatDate } from "@/lib/utils";
 
-export function NovelCard({ novel }: { novel: NovelMeta }) {
+export function NovelCard({
+  novel,
+  favorited,
+  progressLabel,
+}: {
+  novel: NovelMeta;
+  favorited?: boolean;
+  progressLabel?: string | null;
+}) {
   return (
     <Link
       href={`/novel/${novel.slug}`}
@@ -34,6 +42,12 @@ export function NovelCard({ novel }: { novel: NovelMeta }) {
             {novel.status === "completed" ? "已完结" : "连载中"}
           </span>
         </div>
+        {favorited && (
+          <p className="mt-1 text-xs font-medium text-accent">已收藏</p>
+        )}
+        {progressLabel && (
+          <p className="mt-1 text-xs text-ink-500">读到：{progressLabel}</p>
+        )}
         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-600">
           {novel.description}
         </p>

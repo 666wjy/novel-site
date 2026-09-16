@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
+import { AuthMenu } from "@/components/AuthMenu";
 
 const links = [
   { href: "/", label: "首页" },
@@ -37,8 +38,9 @@ export function Header() {
             >
               {link.label}
             </Link>
-          ))}
-        </nav>
+            ))}
+            <AuthMenu />
+          </nav>
       </div>
     </header>
   );

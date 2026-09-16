@@ -10,13 +10,8 @@ export function UnlockBanner() {
 
   useEffect(() => {
     const unlocked = searchParams.get("unlocked");
-    const email = searchParams.get("email");
-    const token = searchParams.get("token");
-
-    if (unlocked === "1" && email && token) {
-      document.cookie = `reader_email=${encodeURIComponent(email)}; path=/; max-age=31536000; SameSite=Lax`;
-      document.cookie = `reader_token=${token}; path=/; max-age=31536000; SameSite=Lax`;
-      setMessage("解锁成功！现在可以阅读全部章节了。");
+    if (unlocked === "1") {
+      setMessage("解锁成功！请确保已用购买邮箱登录，即可阅读全部章节。");
       router.replace(window.location.pathname);
     }
   }, [searchParams, router]);
@@ -28,14 +23,4 @@ export function UnlockBanner() {
       {message}
     </div>
   );
-}
-
-export function getReaderCookies(): { email?: string; token?: string } {
-  if (typeof document === "undefined") return {};
-  const cookies = document.cookie.split(";").reduce<Record<string, string>>((acc, c) => {
-    const [k, v] = c.trim().split("=");
-    acc[k] = decodeURIComponent(v);
-    return acc;
-  }, {});
-  return { email: cookies.reader_email, token: cookies.reader_token };
 }
