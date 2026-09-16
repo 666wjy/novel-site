@@ -6,17 +6,49 @@
   html {
     scroll-behavior: smooth;
   }
+
+  body {
+    background-color: #f7f6f4;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 10% -10%, rgba(196, 92, 38, 0.06), transparent 55%),
+      radial-gradient(ellipse 90% 60% at 95% 5%, rgba(159, 151, 131, 0.12), transparent 50%),
+      linear-gradient(180deg, #faf9f6 0%, #f7f6f4 45%, #f2f0ea 100%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .bg-paper {
+    background-color: transparent;
+  }
+}
+
+.prose-ink {
+  font-family: var(--font-serif), Georgia, "Noto Serif SC", serif;
 }
 
 .prose-ink p {
-  margin-bottom: 1.25em;
+  margin-bottom: 1.35em;
+}
+
+.prose-ink > p:first-of-type::first-letter {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #221f1b;
 }
 
 .prose-ink h2 {
-  font-family: Georgia, "Noto Serif SC", serif;
+  font-family: var(--font-serif), Georgia, "Noto Serif SC", serif;
   font-size: 1.25rem;
   font-weight: 700;
   margin-top: 2em;
   margin-bottom: 0.75em;
   color: #221f1b;
+}
+
+.prose-ink hr {
+  border: none;
+  border-top: 1px solid #d8d4c8;
+  margin: 2.5em auto;
+  width: 40%;
 }

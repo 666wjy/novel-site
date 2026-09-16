@@ -32,3 +32,6 @@ next-env.d.ts
 
 # purchases data (local dev)
 /data/purchases.json
+
+# Local Netlify folder
+.netlify

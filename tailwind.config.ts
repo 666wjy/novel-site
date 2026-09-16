@@ -29,9 +29,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ["Georgia", "Noto Serif SC", "serif"],
-        sans: ["system-ui", "Segoe UI", "PingFang SC", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "Noto Serif SC", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "Segoe UI", "PingFang SC", "sans-serif"],
       },
+
     },
   },
   plugins: [],
