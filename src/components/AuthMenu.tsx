@@ -41,7 +41,7 @@ export function AuthMenu() {
         href={`/login?next=${encodeURIComponent(pathname || "/")}`}
         className="rounded-lg px-3 py-2 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
       >
-        登录
+        Sign in
       </Link>
     );
   }
@@ -56,14 +56,14 @@ export function AuthMenu() {
             : "text-ink-600 hover:bg-ink-100 hover:text-ink-900"
         }`}
       >
-        书架
+        Library
       </Link>
       <button
         type="button"
         onClick={() => void logout()}
         className="rounded-lg px-3 py-2 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
       >
-        退出
+        Sign out
       </button>
     </span>
   );

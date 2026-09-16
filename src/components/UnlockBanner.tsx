@@ -11,7 +11,7 @@ export function UnlockBanner() {
   useEffect(() => {
     const unlocked = searchParams.get("unlocked");
     if (unlocked === "1") {
-      setMessage("解锁成功！请确保已用购买邮箱登录，即可阅读全部章节。");
+      setMessage("Unlocked! Sign in with your purchase email to read every chapter.");
       router.replace(window.location.pathname);
     }
   }, [searchParams, router]);

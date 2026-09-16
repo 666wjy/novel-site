@@ -3,12 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getNovel, getChapterMetas, isChapterFree } from "@/lib/novels";
-import { checkReaderAccess } from "@/lib/access";
+import { checkReaderAccess, getLegacyReaderEmail } from "@/lib/access";
 import { UnlockBanner } from "@/components/UnlockBanner";
 import { NovelHero } from "@/components/NovelHero";
 import { ClaimHint } from "@/components/ClaimHint";
 import { getSession } from "@/lib/auth";
-import { getLegacyReaderEmail } from "@/lib/access";
 import { getProgress, isFavorited } from "@/lib/library";
 
 interface Props {
@@ -57,10 +56,10 @@ export default async function NovelPage({ params }: Props) {
       <section className="mt-10">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="font-serif text-xl font-bold text-ink-950">章节目录</h2>
+            <h2 className="font-serif text-xl font-bold text-ink-950">Table of contents</h2>
             <p className="mt-1 text-sm text-ink-500">
-              共 {chapters.length} 章 · 前 {novel.freeChapters} 章免费
-              {!hasAccess && <> · 解锁全书 {novel.priceLabel}</>}
+              {chapters.length} chapters · First {novel.freeChapters} free
+              {!hasAccess && <> · Unlock {novel.priceLabel}</>}
             </p>
           </div>
         </div>
@@ -75,9 +74,7 @@ export default async function NovelPage({ params }: Props) {
                 <Link
                   href={`/novel/${slug}/${ch.slug}`}
                   className={`group flex items-start gap-4 px-4 py-4 transition sm:px-5 ${
-                    readable
-                      ? "hover:bg-ink-50/80"
-                      : "hover:bg-amber-50/40"
+                    readable ? "hover:bg-ink-50/80" : "hover:bg-amber-50/40"
                   }`}
                 >
                   <span
@@ -108,17 +105,17 @@ export default async function NovelPage({ params }: Props) {
                   {readable ? (
                     isFreeChapter && !hasAccess ? (
                       <span className="mt-0.5 shrink-0 text-xs font-medium text-ink-400">
-                        免费
+                        Free
                       </span>
                     ) : (
                       <span className="mt-0.5 shrink-0 text-xs font-medium text-accent/80 opacity-0 transition group-hover:opacity-100">
-                        阅读 →
+                        Read →
                       </span>
                     )
                   ) : (
                     <span className="mt-0.5 flex shrink-0 items-center gap-1 text-xs text-ink-400">
                       <LockIcon />
-                      付费
+                      Premium
                     </span>
                   )}
                 </Link>

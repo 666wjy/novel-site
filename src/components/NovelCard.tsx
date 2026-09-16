@@ -30,7 +30,7 @@ export function NovelCard({
             <h2 className="font-serif text-lg font-bold text-ink-950 transition group-hover:text-accent sm:text-xl">
               {novel.title}
             </h2>
-            <p className="mt-1 text-sm text-ink-500">作者：{novel.author}</p>
+            <p className="mt-1 text-sm text-ink-500">by {novel.author}</p>
           </div>
           <span
             className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ${
@@ -39,14 +39,14 @@ export function NovelCard({
                 : "bg-amber-50 text-amber-800 ring-1 ring-amber-200"
             }`}
           >
-            {novel.status === "completed" ? "已完结" : "连载中"}
+            {novel.status === "completed" ? "Completed" : "Ongoing"}
           </span>
         </div>
         {favorited && (
-          <p className="mt-1 text-xs font-medium text-accent">已收藏</p>
+          <p className="mt-1 text-xs font-medium text-accent">Saved</p>
         )}
         {progressLabel && (
-          <p className="mt-1 text-xs text-ink-500">读到：{progressLabel}</p>
+          <p className="mt-1 text-xs text-ink-500">Reading: {progressLabel}</p>
         )}
         <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-600">
           {novel.description}
@@ -61,11 +61,11 @@ export function NovelCard({
             </span>
           ))}
           <span className="ml-auto text-xs text-ink-400">
-            更新于 {formatDate(novel.updatedAt)}
+            Updated {formatDate(novel.updatedAt)}
           </span>
         </div>
         <p className="mt-2 text-xs font-medium text-accent">
-          前 {novel.freeChapters} 章免费 · 解锁全书 {novel.priceLabel}
+          First {novel.freeChapters} chapters free · Unlock {novel.priceLabel}
         </p>
       </div>
     </Link>

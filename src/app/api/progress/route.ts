@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export async function PUT(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    return NextResponse.json({ error: "Please sign in" }, { status: 401 });
   }
 
   const body = await req.json();
@@ -16,7 +16,7 @@ export async function PUT(req: NextRequest) {
   const chapterSlug = String(body.chapterSlug || "");
   const chapter = await getChapter(novelSlug, chapterSlug);
   if (!chapter) {
-    return NextResponse.json({ error: "章节不存在" }, { status: 404 });
+    return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
   }
 
   await upsertProgress(session.id, novelSlug, chapterSlug);

@@ -3,7 +3,7 @@ import SuccessPage from "./SuccessPage";
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="py-20 text-center">加载中...</div>}>
+    <Suspense fallback={<div className="py-20 text-center">Loading...</div>}>
       <SuccessPage />
     </Suspense>
   );

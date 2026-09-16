@@ -48,7 +48,7 @@ export function NovelHero({
               <h1 className="font-serif text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
                 {novel.title}
               </h1>
-              <p className="mt-2 text-ink-500">作者：{novel.author}</p>
+              <p className="mt-2 text-ink-500">by {novel.author}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span
@@ -58,11 +58,11 @@ export function NovelHero({
                     : "bg-amber-50 text-amber-800 ring-1 ring-amber-200"
                 }`}
               >
-                {novel.status === "completed" ? "已完结" : "连载中"}
+                {novel.status === "completed" ? "Completed" : "Ongoing"}
               </span>
               {hasAccess && (
                 <span className="rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-green-200">
-                  已解锁全书
+                  Unlocked
                 </span>
               )}
             </div>
@@ -81,7 +81,7 @@ export function NovelHero({
             ))}
           </div>
 
-          <p className="mt-3 text-sm text-ink-400">最后更新：{formatDate(novel.updatedAt)}</p>
+          <p className="mt-3 text-sm text-ink-400">Updated {formatDate(novel.updatedAt)}</p>
 
           <div className="mt-6 flex flex-wrap gap-3">
             {hasAccess ? (
@@ -90,7 +90,7 @@ export function NovelHero({
                   href={continueHref}
                   className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-dark"
                 >
-                  继续阅读
+                  Continue reading
                 </Link>
               )
             ) : (
@@ -100,7 +100,7 @@ export function NovelHero({
                     href={startHref}
                     className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-dark"
                   >
-                    从第 1 章开始
+                    Start chapter 1
                   </Link>
                 )}
                 {unlockHref && (
@@ -108,7 +108,7 @@ export function NovelHero({
                     href={unlockHref}
                     className="inline-flex items-center justify-center rounded-xl border border-ink-300 bg-white px-5 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-accent/40 hover:bg-ink-50"
                   >
-                    解锁全书 {novel.priceLabel}
+                    Unlock book {novel.priceLabel}
                   </Link>
                 )}
               </>
@@ -122,7 +122,7 @@ export function NovelHero({
 
           {!hasAccess && (
             <p className="mt-3 text-xs text-ink-400">
-              前 {novel.freeChapters} 章免费试读 · 喜欢再解锁
+              First {novel.freeChapters} chapters free · Unlock if you like it
             </p>
           )}
         </div>

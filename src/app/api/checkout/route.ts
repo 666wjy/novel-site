@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: "请先登录后再解锁" }, { status: 401 });
+      return NextResponse.json({ error: "Please sign in before unlocking" }, { status: 401 });
     }
 
     const body = await req.json();

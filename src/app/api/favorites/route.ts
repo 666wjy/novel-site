@@ -8,14 +8,14 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    return NextResponse.json({ error: "Please sign in" }, { status: 401 });
   }
 
   const body = await req.json();
   const novelSlug = String(body.novelSlug || "");
   const novel = await getNovel(novelSlug);
   if (!novel) {
-    return NextResponse.json({ error: "作品不存在" }, { status: 404 });
+    return NextResponse.json({ error: "Novel not found" }, { status: 404 });
   }
 
   await setFavorite(session.id, novelSlug, true);
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "请先登录" }, { status: 401 });
+    return NextResponse.json({ error: "Please sign in" }, { status: 401 });
   }
 
   const novelSlug = req.nextUrl.searchParams.get("novelSlug") || "";

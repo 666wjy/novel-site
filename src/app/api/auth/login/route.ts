@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     const user = await findUserByEmail(email);
     if (!user || !verifyPassword(password, user.passwordHash)) {
-      return NextResponse.json({ error: "邮箱或密码不正确" }, { status: 401 });
+      return NextResponse.json({ error: "Incorrect email or password" }, { status: 401 });
     }
 
     const token = await signSession({ id: user.id, email: user.email });
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("login error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "登录失败" },
+      { error: err instanceof Error ? err.message : "Sign-in failed" },
       { status: 500 }
     );
   }

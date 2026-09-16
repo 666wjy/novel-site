@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 import { AuthMenu } from "@/components/AuthMenu";
 
 const links = [
-  { href: "/", label: "首页" },
-  { href: "/pricing", label: "定价" },
-  { href: "/about", label: "关于" },
+  { href: "/", label: "Home" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
 ];
 
 export function Header() {
@@ -38,9 +38,9 @@ export function Header() {
             >
               {link.label}
             </Link>
-            ))}
-            <AuthMenu />
-          </nav>
+          ))}
+          <AuthMenu />
+        </nav>
       </div>
     </header>
   );
@@ -50,8 +50,12 @@ export function Footer() {
   return (
     <footer className="border-t border-ink-200 bg-ink-100 mt-auto">
       <div className="mx-auto max-w-5xl px-4 py-8 text-center text-sm text-ink-500">
-        <p>© {new Date().getFullYear()} {siteConfig.siteName} · 原创作品平台</p>
-        <p className="mt-1">内容由作者使用 AI 辅助创作，版权归属作者本人</p>
+        <p>
+          © {new Date().getFullYear()} {siteConfig.siteName} · Original fiction platform
+        </p>
+        <p className="mt-1">
+          Stories are created by authors with AI assistance. Copyright belongs to the authors.
+        </p>
         <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
           <Link href="/terms" className="hover:text-ink-800 hover:underline">
             Terms

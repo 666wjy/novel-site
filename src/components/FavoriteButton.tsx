@@ -51,7 +51,7 @@ export function FavoriteButton({
       disabled={pending}
       className="inline-flex items-center justify-center rounded-xl border border-ink-300 bg-white px-5 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-accent/40 hover:bg-ink-50 disabled:opacity-60"
     >
-      {favorited ? "已收藏" : "收藏"}
+      {favorited ? "Saved" : "Save"}
     </button>
   );
 }

@@ -49,7 +49,7 @@ export function NovelCover({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={cover!}
-          alt={`${title} 封面`}
+          alt={`${title} cover`}
           sizes={sizes}
           className="absolute inset-0 h-full w-full object-cover"
           loading={priority ? "eager" : "lazy"}

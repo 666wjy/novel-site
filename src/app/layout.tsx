@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${notoSerif.variable} ${notoSans.variable}`}>
+    <html lang="en" className={`${notoSerif.variable} ${notoSans.variable}`}>
       <body className="min-h-screen flex flex-col bg-paper font-sans text-ink-900 antialiased">
         <Header />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>

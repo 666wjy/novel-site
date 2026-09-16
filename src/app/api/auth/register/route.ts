@@ -17,15 +17,15 @@ export async function POST(req: NextRequest) {
     const next = safeNextPath(body.next);
 
     if (!email.includes("@")) {
-      return NextResponse.json({ error: "请输入有效邮箱" }, { status: 400 });
+      return NextResponse.json({ error: "Enter a valid email" }, { status: 400 });
     }
     if (password.length < 8) {
-      return NextResponse.json({ error: "密码至少 8 位" }, { status: 400 });
+      return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
     }
 
     const existing = await findUserByEmail(email);
     if (existing) {
-      return NextResponse.json({ error: "该邮箱已注册，请直接登录" }, { status: 409 });
+      return NextResponse.json({ error: "This email is already registered. Please sign in." }, { status: 409 });
     }
 
     const user = await createUser(email, password);
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("register error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "注册失败" },
+      { error: err instanceof Error ? err.message : "Registration failed" },
       { status: 500 }
     );
   }

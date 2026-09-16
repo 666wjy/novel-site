@@ -6,7 +6,7 @@ import { getAllNovels, getChapterMetas } from "@/lib/novels";
 import { getPurchasesByEmail } from "@/lib/purchases";
 import { NovelCard } from "@/components/NovelCard";
 
-export const metadata = { title: "我的书架" };
+export const metadata = { title: "My library" };
 
 export default async function LibraryPage() {
   const session = await getSession();
@@ -21,11 +21,14 @@ export default async function LibraryPage() {
   const hasSub = purchases.some(
     (p) => p.type === "subscription" && (!p.expiresAt || new Date(p.expiresAt).getTime() > now)
   );
+
   const ownedSlugs = [
     ...new Set(
       hasSub
         ? novels.map((n) => n.slug)
-        : purchases.filter((p) => p.type === "novel_unlock" && p.novelSlug).map((p) => p.novelSlug as string)
+        : purchases
+            .filter((p) => p.type === "novel_unlock" && p.novelSlug)
+            .map((p) => p.novelSlug as string)
     ),
   ];
 
@@ -49,22 +52,24 @@ export default async function LibraryPage() {
     recent.push({
       novel,
       href: `/novel/${row.novelSlug}/${row.chapterSlug}`,
-      label: chapter ? `第 ${chapter.order} 章 ${chapter.title}` : row.chapterSlug,
+      label: chapter ? `Chapter ${chapter.order}: ${chapter.title}` : row.chapterSlug,
     });
   }
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-bold text-ink-950">我的书架</h1>
+      <h1 className="font-serif text-3xl font-bold text-ink-950">My library</h1>
       <p className="mt-1 text-sm text-ink-500">{session.email}</p>
       {hasSub && (
-        <p className="mt-2 text-sm font-medium text-accent">全站订阅有效中</p>
+        <p className="mt-2 text-sm font-medium text-accent">Site subscription active</p>
       )}
 
       <section className="mt-10">
-        <h2 className="font-serif text-xl font-bold text-ink-950">最近阅读</h2>
+        <h2 className="font-serif text-xl font-bold text-ink-950">Continue reading</h2>
         {recent.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-500">还没有阅读记录，去首页挑一本开始吧。</p>
+          <p className="mt-3 text-sm text-ink-500">
+            No reading history yet. Pick a title from the home page.
+          </p>
         ) : (
           <ul className="mt-4 space-y-2">
             {recent.map((item) => (
@@ -77,7 +82,7 @@ export default async function LibraryPage() {
                     <span className="font-medium text-ink-900">{item.novel.title}</span>
                     <span className="mt-0.5 block text-sm text-ink-500">{item.label}</span>
                   </span>
-                  <span className="text-sm text-accent">继续 →</span>
+                  <span className="text-sm text-accent">Continue →</span>
                 </Link>
               </li>
             ))}
@@ -86,24 +91,30 @@ export default async function LibraryPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="font-serif text-xl font-bold text-ink-950">已购作品</h2>
+        <h2 className="font-serif text-xl font-bold text-ink-950">Purchased</h2>
         {owned.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            还没有已购作品。登录购买邮箱后，付款记录会自动出现在这里。
+            No purchases yet. Sign in with the email you paid with to restore unlocks.
           </p>
         ) : (
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             {owned.map((novel) => (
-              <NovelCard key={novel.slug} novel={novel} favorited={favoriteSlugs.includes(novel.slug)} />
+              <NovelCard
+                key={novel.slug}
+                novel={novel}
+                favorited={favoriteSlugs.includes(novel.slug)}
+              />
             ))}
           </div>
         )}
       </section>
 
       <section className="mt-10">
-        <h2 className="font-serif text-xl font-bold text-ink-950">收藏</h2>
+        <h2 className="font-serif text-xl font-bold text-ink-950">Saved</h2>
         {favorites.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-500">点击作品页的「收藏」即可加入书架。</p>
+          <p className="mt-3 text-sm text-ink-500">
+            Tap Save on a novel page to add it here.
+          </p>
         ) : (
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             {favorites.map((novel) => (

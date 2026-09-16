@@ -41,7 +41,7 @@ export function Paywall({
         window.location.href = `/login?next=${encodeURIComponent(next)}`;
         return;
       }
-      if (!res.ok) throw new Error(data.error || "创建支付失败");
+      if (!res.ok) throw new Error(data.error || "Could not start checkout");
 
       sessionStorage.setItem(
         PURCHASE_KEY,
@@ -54,7 +54,7 @@ export function Paywall({
 
       window.location.href = data.url;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "支付失败，请稍后重试");
+      setError(e instanceof Error ? e.message : "Payment failed. Please try again.");
       setLoading(null);
     }
   }
@@ -77,11 +77,13 @@ export function Paywall({
             />
           </svg>
         </div>
-        <h3 className="font-serif text-xl font-bold text-ink-950">付费章节</h3>
+        <h3 className="font-serif text-xl font-bold text-ink-950">Premium chapter</h3>
         <p className="mt-2 text-sm text-ink-600">
-          《{novelTitle}》· {chapterTitle}
+          {novelTitle} · {chapterTitle}
         </p>
-        <p className="mt-3 text-sm text-ink-500">免费章节已读完，登录后解锁可继续阅读</p>
+        <p className="mt-3 text-sm text-ink-500">
+          Free chapters end here. Sign in and unlock to keep reading.
+        </p>
       </div>
 
       <div className="px-6 py-6 sm:px-8">
@@ -94,14 +96,14 @@ export function Paywall({
                 disabled={loading !== null}
                 className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-dark disabled:opacity-60"
               >
-                {loading === "novel" ? "跳转支付中..." : `解锁本书 · ${priceLabel}`}
+                {loading === "novel" ? "Opening checkout..." : `Unlock this book · ${priceLabel}`}
               </button>
               <button
                 onClick={() => checkout("subscription")}
                 disabled={loading !== null}
                 className="mt-3 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-60"
               >
-                {loading === "sub" ? "跳转支付中..." : "订阅全站 · $9.99/月"}
+                {loading === "sub" ? "Opening checkout..." : "Site subscription · $9.99/mo"}
               </button>
             </>
           ) : (
@@ -110,15 +112,15 @@ export function Paywall({
                 href={`/login?next=${encodeURIComponent(next)}`}
                 className="inline-flex w-full items-center justify-center rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-dark"
               >
-                登录后解锁
+                Sign in to unlock
               </Link>
               <p className="mt-3 text-sm text-ink-500">
-                没有账号？{" "}
+                No account?{" "}
                 <Link
                   href={`/register?next=${encodeURIComponent(next)}`}
                   className="text-accent hover:underline"
                 >
-                  免费注册
+                  Create one free
                 </Link>
               </p>
             </div>

@@ -55,7 +55,7 @@ export default async function ChapterPage({ params }: Props) {
             href={`/novel/${slug}`}
             className="text-ink-500 transition hover:text-accent"
           >
-            ← 目录
+            ← Contents
           </Link>
           <span className="mx-2 text-ink-300">·</span>
           <span className="truncate font-medium text-ink-700">{novel.title}</span>
@@ -64,7 +64,7 @@ export default async function ChapterPage({ params }: Props) {
       </div>
 
       <header className="mb-10 text-center">
-        <p className="text-sm tracking-wide text-ink-400">第 {chapter.order} 章</p>
+        <p className="text-sm tracking-wide text-ink-400">Chapter {chapter.order}</p>
         <h1 className="mt-2 font-serif text-3xl font-bold leading-snug text-ink-950 sm:text-4xl">
           {chapter.title}
         </h1>
@@ -89,14 +89,14 @@ export default async function ChapterPage({ params }: Props) {
             href={`/novel/${slug}/${prev.slug}`}
             className="rounded-xl border border-ink-200 bg-white/80 px-4 py-3.5 text-sm transition hover:border-accent/30 hover:bg-ink-50"
           >
-            <span className="block text-xs text-ink-400">上一章</span>
+            <span className="block text-xs text-ink-400">Previous</span>
             <span className="mt-0.5 line-clamp-1 font-medium text-ink-800">
               {prev.title}
             </span>
           </Link>
         ) : (
           <span className="rounded-xl border border-dashed border-ink-100 px-4 py-3.5 text-sm text-ink-300">
-            已是第一章
+            First chapter
           </span>
         )}
         {next ? (
@@ -104,14 +104,14 @@ export default async function ChapterPage({ params }: Props) {
             href={`/novel/${slug}/${next.slug}`}
             className="rounded-xl border border-ink-200 bg-white/80 px-4 py-3.5 text-right text-sm transition hover:border-accent/30 hover:bg-ink-50"
           >
-            <span className="block text-xs text-ink-400">下一章</span>
+            <span className="block text-xs text-ink-400">Next</span>
             <span className="mt-0.5 line-clamp-1 font-medium text-ink-800">
               {next.title}
             </span>
           </Link>
         ) : (
           <span className="rounded-xl border border-dashed border-ink-100 px-4 py-3.5 text-right text-sm text-ink-300">
-            已是最后一章
+            Last chapter
           </span>
         )}
       </nav>

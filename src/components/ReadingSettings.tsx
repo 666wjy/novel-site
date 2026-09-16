@@ -90,24 +90,24 @@ export function ReadingSettings() {
         className="rounded-lg border border-ink-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-ink-600 transition hover:border-ink-300 hover:text-ink-900"
         aria-expanded={open}
       >
-        阅读设置
+        Reading settings
       </button>
       {open && (
         <>
           <button
             type="button"
             className="fixed inset-0 z-40 cursor-default"
-            aria-label="关闭设置"
+            aria-label="Close settings"
             onClick={() => setOpen(false)}
           />
           <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-ink-200 bg-white p-4 shadow-lg">
-            <p className="text-xs font-medium text-ink-500">字号</p>
+            <p className="text-xs font-medium text-ink-500">Font size</p>
             <div className="mt-2 flex gap-1">
               {(
                 [
-                  ["sm", "小"],
-                  ["md", "中"],
-                  ["lg", "大"],
+                  ["sm", "S"],
+                  ["md", "M"],
+                  ["lg", "L"],
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -125,13 +125,13 @@ export function ReadingSettings() {
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs font-medium text-ink-500">行距</p>
+            <p className="mt-3 text-xs font-medium text-ink-500">Line spacing</p>
             <div className="mt-2 flex gap-1">
               {(
                 [
-                  ["snug", "紧"],
-                  ["normal", "中"],
-                  ["relaxed", "松"],
+                  ["snug", "Tight"],
+                  ["normal", "Normal"],
+                  ["relaxed", "Loose"],
                 ] as const
               ).map(([value, label]) => (
                 <button

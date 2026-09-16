@@ -32,11 +32,11 @@ export function AuthForm({ mode }: AuthFormProps) {
         body: JSON.stringify({ email, password, next }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "失败");
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
       router.push(data.next || next);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "失败");
+      setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
     }
   }
@@ -44,17 +44,17 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <div className="mx-auto max-w-md">
       <h1 className="font-serif text-3xl font-bold text-ink-950">
-        {isLogin ? "登录" : "注册账号"}
+        {isLogin ? "Sign in" : "Create account"}
       </h1>
       <p className="mt-2 text-sm text-ink-500">
         {isLogin
-          ? "用购买时的同一邮箱登录，即可找回已解锁作品。"
-          : "注册后解锁、收藏和阅读进度都会保存在账号里。"}
+          ? "Use the same email you purchased with to restore unlocked books."
+          : "Save unlocks, favorites, and reading progress to your account."}
       </p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <label className="block text-sm">
-          <span className="text-ink-600">邮箱</span>
+          <span className="text-ink-600">Email</span>
           <input
             type="email"
             required
@@ -65,7 +65,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           />
         </label>
         <label className="block text-sm">
-          <span className="text-ink-600">密码{!isLogin && "（至少 8 位）"}</span>
+          <span className="text-ink-600">Password{!isLogin && " (at least 8 characters)"}</span>
           <input
             type="password"
             required
@@ -82,29 +82,29 @@ export function AuthForm({ mode }: AuthFormProps) {
           disabled={loading}
           className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-dark disabled:opacity-60"
         >
-          {loading ? "请稍候..." : isLogin ? "登录" : "创建账号"}
+          {loading ? "Please wait..." : isLogin ? "Sign in" : "Create account"}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-500">
         {isLogin ? (
           <>
-            还没有账号？{" "}
+            No account yet?{" "}
             <Link
               href={`/register?next=${encodeURIComponent(next)}${email ? `&email=${encodeURIComponent(email)}` : ""}`}
               className="text-accent hover:underline"
             >
-              去注册
+              Register
             </Link>
           </>
         ) : (
           <>
-            已有账号？{" "}
+            Already have an account?{" "}
             <Link
               href={`/login?next=${encodeURIComponent(next)}${email ? `&email=${encodeURIComponent(email)}` : ""}`}
               className="text-accent hover:underline"
             >
-              去登录
+              Sign in
             </Link>
           </>
         )}
