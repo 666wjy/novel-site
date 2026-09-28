@@ -58,6 +58,42 @@ export async function createChapter(novelSlug: string, input: ChapterInput) {
     .where(eq(novelsTable.slug, novelSlug));
 }
 
+/** Bulk insert chapters (one transaction-ish sequence). */
+export async function createChaptersBulk(
+  novelSlug: string,
+  inputs: ChapterInput[],
+  opts?: { replace?: boolean }
+) {
+  const db = getDb();
+
+  if (opts?.replace) {
+    await db.delete(chaptersTable).where(eq(chaptersTable.novelSlug, novelSlug));
+  }
+
+  for (const input of inputs) {
+    await db.insert(chaptersTable).values({
+      id: crypto.randomUUID(),
+      novelSlug,
+      slug: input.slug,
+      title: input.title,
+      order: input.order,
+      summary: input.summary ?? null,
+      content: input.content.trim(),
+    });
+  }
+
+  await db
+    .update(novelsTable)
+    .set({ updatedAt: new Date() })
+    .where(eq(novelsTable.slug, novelSlug));
+}
+
+export async function getMaxChapterOrder(novelSlug: string): Promise<number> {
+  const rows = await getAdminChapterList(novelSlug);
+  if (rows.length === 0) return 0;
+  return Math.max(...rows.map((r) => r.order));
+}
+
 export async function updateChapter(
   id: string,
   novelSlug: string,

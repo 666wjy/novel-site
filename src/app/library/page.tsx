@@ -4,9 +4,9 @@ import { getSession } from "@/lib/auth";
 import { listFavoriteSlugs, listProgress } from "@/lib/library";
 import { getAllNovels, getChapterMetas } from "@/lib/novels";
 import { getPurchasesByEmail } from "@/lib/purchases";
-import { NovelCard } from "@/components/NovelCard";
+import { NovelCover } from "@/components/NovelCover";
 
-export const metadata = { title: "My library" };
+export const metadata = { title: "Shelf" };
 
 export default async function LibraryPage() {
   const session = await getSession();
@@ -43,82 +43,124 @@ export default async function LibraryPage() {
     .map((slug) => novelBySlug.get(slug))
     .filter((n): n is NonNullable<typeof n> => Boolean(n));
 
-  const recent = [];
+  const recent: {
+    novel: (typeof novels)[0];
+    href: string;
+    label: string;
+    pct: number;
+  }[] = [];
+
   for (const row of progressRows) {
     const novel = novelBySlug.get(row.novelSlug);
     if (!novel) continue;
     const chapters = await getChapterMetas(row.novelSlug);
     const chapter = chapters.find((c) => c.slug === row.chapterSlug);
+    const pct =
+      chapter && chapters.length
+        ? Math.round((chapter.order / chapters.length) * 100)
+        : 0;
     recent.push({
       novel,
       href: `/novel/${row.novelSlug}/${row.chapterSlug}`,
-      label: chapter ? `Chapter ${chapter.order}: ${chapter.title}` : row.chapterSlug,
+      label: chapter ? `Ch. ${chapter.order} · ${chapter.title}` : row.chapterSlug,
+      pct,
     });
   }
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-bold text-ink-950">My library</h1>
-      <p className="mt-1 text-sm text-ink-500">{session.email}</p>
-      {hasSub && (
-        <p className="mt-2 text-sm font-medium text-accent">Site subscription active</p>
-      )}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-3xl font-bold text-ink-950">Shelf</h1>
+          <p className="mt-1 text-sm text-ink-500">{session.email}</p>
+        </div>
+        {hasSub && (
+          <span className="rounded-full bg-[#07c160]/12 px-3 py-1 text-xs font-medium text-[#07c160]">
+            Subscription active
+          </span>
+        )}
+      </div>
 
-      <section className="mt-10">
-        <h2 className="font-serif text-xl font-bold text-ink-950">Continue reading</h2>
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">
+          Continue reading
+        </h2>
         {recent.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            No reading history yet. Pick a title from the home page.
+            Nothing here yet.{" "}
+            <Link href="/" className="text-[#07c160]">
+              Discover titles →
+            </Link>
           </p>
         ) : (
-          <ul className="mt-4 space-y-2">
+          <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5">
             {recent.map((item) => (
-              <li key={item.novel.slug}>
-                <Link
-                  href={item.href}
-                  className="flex items-center justify-between rounded-xl border border-ink-200/80 bg-white/80 px-4 py-3 transition hover:border-accent/30"
-                >
-                  <span>
-                    <span className="font-medium text-ink-900">{item.novel.title}</span>
-                    <span className="mt-0.5 block text-sm text-ink-500">{item.label}</span>
-                  </span>
-                  <span className="text-sm text-accent">Continue →</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="mt-10">
-        <h2 className="font-serif text-xl font-bold text-ink-950">Purchased</h2>
-        {owned.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-500">
-            No purchases yet. Sign in with the email you paid with to restore unlocks.
-          </p>
-        ) : (
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
-            {owned.map((novel) => (
-              <NovelCard
-                key={novel.slug}
-                novel={novel}
-                favorited={favoriteSlugs.includes(novel.slug)}
-              />
+              <Link key={item.novel.slug} href={item.href} className="group">
+                <div className="relative overflow-hidden rounded-lg shadow-md">
+                  <NovelCover
+                    title={item.novel.title}
+                    cover={item.novel.cover}
+                    className="aspect-[2/3] w-full transition group-hover:scale-[1.02]"
+                    sizes="160px"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-6">
+                    <div className="h-1 overflow-hidden rounded-full bg-white/25">
+                      <div
+                        className="h-full rounded-full bg-[#07c160]"
+                        style={{ width: `${item.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-2 line-clamp-2 text-xs font-medium text-ink-900">
+                  {item.novel.title}
+                </p>
+                <p className="line-clamp-1 text-[10px] text-ink-400">{item.label}</p>
+              </Link>
             ))}
           </div>
         )}
       </section>
 
       <section className="mt-10">
-        <h2 className="font-serif text-xl font-bold text-ink-950">Saved</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">Saved</h2>
         {favorites.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-500">Tap Save on a book page to add it here.</p>
+        ) : (
+          <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5">
+            {favorites.map((novel) => (
+              <Link key={novel.slug} href={`/novel/${novel.slug}`} className="group">
+                <NovelCover
+                  title={novel.title}
+                  cover={novel.cover}
+                  className="aspect-[2/3] w-full rounded-lg shadow-md transition group-hover:scale-[1.02]"
+                  sizes="160px"
+                />
+                <p className="mt-2 line-clamp-2 text-xs font-medium text-ink-900">{novel.title}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">Purchased</h2>
+        {owned.length === 0 ? (
           <p className="mt-3 text-sm text-ink-500">
-            Tap Save on a novel page to add it here.
+            No purchases yet. Pay with the same email you sign in with.
           </p>
         ) : (
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
-            {favorites.map((novel) => (
-              <NovelCard key={novel.slug} novel={novel} favorited />
+          <div className="mt-4 grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5">
+            {owned.map((novel) => (
+              <Link key={novel.slug} href={`/novel/${novel.slug}`} className="group">
+                <NovelCover
+                  title={novel.title}
+                  cover={novel.cover}
+                  className="aspect-[2/3] w-full rounded-lg shadow-md transition group-hover:scale-[1.02]"
+                  sizes="160px"
+                />
+                <p className="mt-2 line-clamp-2 text-xs font-medium text-ink-900">{novel.title}</p>
+              </Link>
             ))}
           </div>
         )}

@@ -8,6 +8,7 @@ import {
   updateNovel,
 } from "@/lib/novels-admin";
 import {
+  getTranslateProviderLabel,
   sleep,
   translateChapter,
   translateNovelMeta,
@@ -16,19 +17,26 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
+function hasAnyTranslateKey() {
+  return Boolean(
+    process.env.DEEPSEEK_API_KEY ||
+      process.env.GEMINI_API_KEY ||
+      (process.env.TRANSLATE_API_KEY && process.env.TRANSLATE_BASE_URL)
+  );
+}
+
 /**
  * POST { slug, scope: "meta" | "chapter" | "all", chapterId? }
- * Translates Chinese novel content to English via free Gemini API and saves to DB.
  */
 export async function POST(req: NextRequest) {
   const authError = await requireAdminApi();
   if (authError) return authError;
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!hasAnyTranslateKey()) {
     return NextResponse.json(
       {
         error:
-          "缺少 GEMINI_API_KEY。请到 https://aistudio.google.com/apikey 免费创建，并写入 .env.local / Netlify。",
+          "未配置翻译密钥。国内请到 https://platform.deepseek.com/api_keys 创建 DEEPSEEK_API_KEY，写入 .env.local 后重启 npm run dev。（Gemini 在国内常报 location not supported）",
       },
       { status: 400 }
     );
@@ -46,9 +54,10 @@ export async function POST(req: NextRequest) {
     }
 
     const result: {
+      provider: string;
       meta?: boolean;
       chapters: Array<{ id: string; title: string; ok: boolean; error?: string }>;
-    } = { chapters: [] };
+    } = { provider: getTranslateProviderLabel(), chapters: [] };
 
     if (scope === "meta" || scope === "all") {
       const meta = await translateNovelMeta({
@@ -120,7 +129,7 @@ export async function POST(req: NextRequest) {
             error: err instanceof Error ? err.message : "翻译失败",
           });
         }
-        await sleep(1200);
+        await sleep(800);
       }
     }
 

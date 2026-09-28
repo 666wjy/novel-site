@@ -49,9 +49,9 @@ export function FavoriteButton({
       type="button"
       onClick={() => void toggle()}
       disabled={pending}
-      className="inline-flex items-center justify-center rounded-xl border border-ink-300 bg-white px-5 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-accent/40 hover:bg-ink-50 disabled:opacity-60"
+      className="inline-flex items-center justify-center rounded-full border border-ink-300 bg-white px-5 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-[#07c160]/40 hover:text-[#07c160] disabled:opacity-60"
     >
-      {favorited ? "Saved" : "Save"}
+      {favorited ? "On shelf" : "Add to shelf"}
     </button>
   );
 }

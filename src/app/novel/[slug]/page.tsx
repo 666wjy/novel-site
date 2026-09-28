@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getNovel, getChapterMetas, isChapterFree } from "@/lib/novels";
+import { getNovel, getChapterMetas, getAllNovels, isChapterFree } from "@/lib/novels";
 import { checkReaderAccess, getLegacyReaderEmail } from "@/lib/access";
 import { UnlockBanner } from "@/components/UnlockBanner";
 import { NovelHero } from "@/components/NovelHero";
+import { NovelCover } from "@/components/NovelCover";
 import { ClaimHint } from "@/components/ClaimHint";
 import { getSession } from "@/lib/auth";
 import { getProgress, isFavorited } from "@/lib/library";
@@ -35,6 +36,19 @@ export default async function NovelPage({ params }: Props) {
     chapters.find((ch) => !isChapterFree(novel, ch.order)) ?? null;
   const progress = session ? await getProgress(session.id, slug) : null;
   const favorited = session ? await isFavorited(session.id, slug) : false;
+  const progressChapter = chapters.find((c) => c.slug === progress?.chapterSlug);
+  const progressPct =
+    progressChapter && chapters.length
+      ? Math.round((progressChapter.order / chapters.length) * 100)
+      : 0;
+
+  const all = await getAllNovels();
+  const related = all
+    .filter(
+      (n) =>
+        n.slug !== slug && n.genre.some((g) => novel.genre.includes(g))
+    )
+    .slice(0, 6);
 
   return (
     <div>
@@ -51,6 +65,11 @@ export default async function NovelPage({ params }: Props) {
         continueChapterSlug={progress?.chapterSlug ?? firstChapter?.slug ?? null}
         loggedIn={Boolean(session)}
         favorited={favorited}
+        progressLabel={
+          progressChapter
+            ? `Reading Ch. ${progressChapter.order} · ${progressPct}%`
+            : null
+        }
       />
 
       <section className="mt-10">
@@ -74,7 +93,11 @@ export default async function NovelPage({ params }: Props) {
                 <Link
                   href={`/novel/${slug}/${ch.slug}`}
                   className={`group flex items-start gap-4 px-4 py-4 transition sm:px-5 ${
-                    readable ? "hover:bg-ink-50/80" : "hover:bg-amber-50/40"
+                    progress?.chapterSlug === ch.slug
+                      ? "bg-[#07c160]/8"
+                      : readable
+                        ? "hover:bg-ink-50/80"
+                        : "hover:bg-amber-50/40"
                   }`}
                 >
                   <span
@@ -108,8 +131,8 @@ export default async function NovelPage({ params }: Props) {
                         Free
                       </span>
                     ) : (
-                      <span className="mt-0.5 shrink-0 text-xs font-medium text-accent/80 opacity-0 transition group-hover:opacity-100">
-                        Read →
+                      <span className="mt-0.5 shrink-0 text-xs font-medium text-[#07c160]">
+                        {progress?.chapterSlug === ch.slug ? "Reading" : "Read →"}
                       </span>
                     )
                   ) : (
@@ -124,6 +147,25 @@ export default async function NovelPage({ params }: Props) {
           })}
         </ol>
       </section>
+
+      {related.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-serif text-xl font-bold text-ink-950">You may also like</h2>
+          <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+            {related.map((item) => (
+              <Link key={item.slug} href={`/novel/${item.slug}`} className="w-24 shrink-0 sm:w-28">
+                <NovelCover
+                  title={item.title}
+                  cover={item.cover}
+                  className="aspect-[2/3] w-full rounded-lg shadow-md"
+                  sizes="112px"
+                />
+                <p className="mt-2 line-clamp-2 text-xs font-medium text-ink-900">{item.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

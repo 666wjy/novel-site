@@ -7,6 +7,7 @@ export interface CommentRecord {
   id: string;
   novelSlug: string;
   chapterSlug: string;
+  quoteText: string | null;
   authorName: string;
   content: string;
   createdAt: string;
@@ -17,6 +18,7 @@ function mapComment(row: typeof commentsTable.$inferSelect): CommentRecord {
     id: row.id,
     novelSlug: row.novelSlug,
     chapterSlug: row.chapterSlug,
+    quoteText: row.quoteText ?? null,
     authorName: row.authorName,
     content: row.content,
     createdAt: row.createdAt.toISOString(),
@@ -53,13 +55,16 @@ export async function createComment(input: {
   chapterSlug: string;
   authorName: string;
   content: string;
+  quoteText?: string | null;
 }): Promise<CommentRecord> {
   const db = getDb();
+  const quote = input.quoteText?.trim().slice(0, 500) || null;
   const entry = {
     id: crypto.randomUUID(),
     novelSlug: input.novelSlug,
     chapterSlug: input.chapterSlug,
-    authorName: input.authorName.trim().slice(0, 40),
+    quoteText: quote,
+    authorName: (input.authorName.trim() || "Anonymous").slice(0, 40),
     content: input.content.trim().slice(0, 2000),
     createdAt: new Date(),
   };
@@ -68,6 +73,7 @@ export async function createComment(input: {
     id: entry.id,
     novelSlug: entry.novelSlug,
     chapterSlug: entry.chapterSlug,
+    quoteText: entry.quoteText,
     authorName: entry.authorName,
     content: entry.content,
     createdAt: entry.createdAt.toISOString(),

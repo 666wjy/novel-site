@@ -1,44 +1,60 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 import { AuthMenu } from "@/components/AuthMenu";
 
 const links = [
-  { href: "/", label: "Home" },
+  { href: "/", label: "Discover" },
+  { href: "/library", label: "Shelf" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/about", label: "About" },
 ];
 
 export function Header() {
   const pathname = usePathname();
+  const [name, setName] = useState(siteConfig.siteName);
+
+  useEffect(() => {
+    fetch("/api/site")
+      .then((r) => r.json())
+      .then((d: { siteName?: string }) => {
+        if (d.siteName) setName(d.siteName);
+      })
+      .catch(() => undefined);
+  }, []);
 
   return (
-    <header className="border-b border-ink-200 bg-ink-50/90 backdrop-blur sticky top-0 z-50">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <Link href="/" className="group">
-          <span className="font-serif text-xl font-bold text-ink-950 group-hover:text-accent transition">
-            {siteConfig.siteName}
+    <header className="sticky top-0 z-50 border-b border-ink-200/80 bg-white/90 backdrop-blur-md">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        <Link href="/" className="group shrink-0">
+          <span className="font-serif text-lg font-bold text-ink-950 transition group-hover:text-[#07c160] sm:text-xl">
+            {name}
           </span>
-          <span className="hidden sm:block text-xs text-ink-500 mt-0.5">{siteConfig.tagline}</span>
         </Link>
-        <nav className="flex gap-1 sm:gap-2">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "rounded-lg px-3 py-2 text-sm transition",
-                pathname === link.href
-                  ? "bg-accent/10 text-accent font-medium"
-                  : "text-ink-600 hover:bg-ink-100 hover:text-ink-900"
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="flex items-center gap-0.5 sm:gap-1">
+          {links.map((link) => {
+            const active =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-sm transition",
+                  active
+                    ? "bg-[#07c160]/12 font-medium text-[#07c160]"
+                    : "text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
           <AuthMenu />
         </nav>
       </div>
@@ -48,15 +64,18 @@ export function Header() {
 
 export function Footer() {
   return (
-    <footer className="border-t border-ink-200 bg-ink-100 mt-auto">
+    <footer className="mt-auto border-t border-ink-200 bg-white/60">
       <div className="mx-auto max-w-5xl px-4 py-8 text-center text-sm text-ink-500">
         <p>
-          © {new Date().getFullYear()} {siteConfig.siteName} · Original fiction platform
+          © {new Date().getFullYear()} {siteConfig.siteName} · Read · Save · Discuss
         </p>
-        <p className="mt-1">
-          Stories are created by authors with AI assistance. Copyright belongs to the authors.
+        <p className="mt-1 text-xs text-ink-400">
+          Stories by authors with AI assistance. Copyright belongs to the authors.
         </p>
-        <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+        <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
+          <Link href="/about" className="hover:text-ink-800 hover:underline">
+            About
+          </Link>
           <Link href="/terms" className="hover:text-ink-800 hover:underline">
             Terms
           </Link>

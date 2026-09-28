@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { NovelMeta } from "@/lib/types";
 import { NovelCover } from "@/components/NovelCover";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { ShareButton } from "@/components/ShareButton";
 import { formatDate } from "@/lib/utils";
 
 interface NovelHeroProps {
@@ -12,6 +13,7 @@ interface NovelHeroProps {
   continueChapterSlug?: string | null;
   loggedIn: boolean;
   favorited: boolean;
+  progressLabel?: string | null;
 }
 
 export function NovelHero({
@@ -22,6 +24,7 @@ export function NovelHero({
   continueChapterSlug,
   loggedIn,
   favorited,
+  progressLabel,
 }: NovelHeroProps) {
   const startHref = firstChapterSlug ? `/novel/${novel.slug}/${firstChapterSlug}` : null;
   const continueHref = continueChapterSlug
@@ -32,14 +35,14 @@ export function NovelHero({
     : startHref;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-ink-200/80 bg-white/70 shadow-sm backdrop-blur-sm">
+    <section className="overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-sm">
       <div className="flex flex-col gap-6 p-5 sm:flex-row sm:gap-8 sm:p-8">
         <NovelCover
           title={novel.title}
           cover={novel.cover}
           priority
-          className="aspect-[2/3] w-full shrink-0 sm:w-44 md:w-52"
-          sizes="(max-width: 640px) 100vw, 208px"
+          className="mx-auto aspect-[2/3] w-40 shrink-0 shadow-md sm:mx-0 sm:w-44 md:w-48"
+          sizes="192px"
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -48,20 +51,20 @@ export function NovelHero({
               <h1 className="font-serif text-3xl font-bold leading-tight text-ink-950 sm:text-4xl">
                 {novel.title}
               </h1>
-              <p className="mt-2 text-ink-500">by {novel.author}</p>
+              <p className="mt-2 text-ink-500">{novel.author}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span
-                className={`rounded-md px-2.5 py-1 text-xs font-medium ${
+                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                   novel.status === "completed"
-                    ? "bg-green-50 text-green-700 ring-1 ring-green-200"
-                    : "bg-amber-50 text-amber-800 ring-1 ring-amber-200"
+                    ? "bg-[#07c160]/12 text-[#07c160]"
+                    : "bg-amber-50 text-amber-800"
                 }`}
               >
                 {novel.status === "completed" ? "Completed" : "Ongoing"}
               </span>
               {hasAccess && (
-                <span className="rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-green-200">
+                <span className="rounded-full bg-[#07c160]/12 px-2.5 py-1 text-xs font-medium text-[#07c160]">
                   Unlocked
                 </span>
               )}
@@ -74,7 +77,7 @@ export function NovelHero({
             {novel.genre.map((g) => (
               <span
                 key={g}
-                className="rounded-md bg-ink-100/80 px-2 py-0.5 text-xs text-ink-600"
+                className="rounded-full bg-ink-100 px-2.5 py-0.5 text-xs text-ink-600"
               >
                 {g}
               </span>
@@ -82,13 +85,16 @@ export function NovelHero({
           </div>
 
           <p className="mt-3 text-sm text-ink-400">Updated {formatDate(novel.updatedAt)}</p>
+          {progressLabel && (
+            <p className="mt-2 text-sm font-medium text-[#07c160]">{progressLabel}</p>
+          )}
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-2.5">
             {hasAccess ? (
               continueHref && (
                 <Link
                   href={continueHref}
-                  className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-dark"
+                  className="inline-flex items-center justify-center rounded-full bg-[#07c160] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#06ad56]"
                 >
                   Continue reading
                 </Link>
@@ -98,17 +104,17 @@ export function NovelHero({
                 {startHref && (
                   <Link
                     href={startHref}
-                    className="inline-flex items-center justify-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-dark"
+                    className="inline-flex items-center justify-center rounded-full bg-[#07c160] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#06ad56]"
                   >
-                    Start chapter 1
+                    Start reading
                   </Link>
                 )}
                 {unlockHref && (
                   <Link
                     href={unlockHref}
-                    className="inline-flex items-center justify-center rounded-xl border border-ink-300 bg-white px-5 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-accent/40 hover:bg-ink-50"
+                    className="inline-flex items-center justify-center rounded-full border border-ink-300 bg-white px-5 py-2.5 text-sm font-semibold text-ink-800 transition hover:border-[#07c160]/40"
                   >
-                    Unlock book {novel.priceLabel}
+                    Unlock {novel.priceLabel}
                   </Link>
                 )}
               </>
@@ -118,6 +124,7 @@ export function NovelHero({
               initialFavorited={favorited}
               loggedIn={loggedIn}
             />
+            <ShareButton title={novel.title} text={novel.description} />
           </div>
 
           {!hasAccess && (

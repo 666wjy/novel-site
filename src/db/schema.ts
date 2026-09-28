@@ -60,6 +60,8 @@ export const comments = pgTable("comments", {
     .notNull()
     .references(() => novels.slug, { onDelete: "cascade" }),
   chapterSlug: text("chapter_slug").notNull(),
+  /** Null = chapter-level comment; set = comment on a selected sentence/passage */
+  quoteText: text("quote_text"),
   authorName: text("author_name").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

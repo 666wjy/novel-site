@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
-import { Header, Footer } from "@/components/Header";
-import { siteConfig } from "@/lib/site-config";
+import { SiteChrome } from "@/components/SiteChrome";
+import { getSiteSettings } from "@/lib/site-settings";
 import "./globals.css";
 
 const notoSerif = Noto_Serif_SC({
@@ -18,21 +18,22 @@ const notoSans = Noto_Sans_SC({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: siteConfig.siteName,
-    template: `%s · ${siteConfig.siteName}`,
-  },
-  description: siteConfig.tagline,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteSettings();
+  return {
+    title: {
+      default: s.siteName,
+      template: `%s · ${s.siteName}`,
+    },
+    description: s.tagline,
+  };
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${notoSerif.variable} ${notoSans.variable}`}>
-      <body className="min-h-screen flex flex-col bg-paper font-sans text-ink-900 antialiased">
-        <Header />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>
-        <Footer />
+      <body className="flex min-h-screen flex-col bg-paper font-sans text-ink-900 antialiased">
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );

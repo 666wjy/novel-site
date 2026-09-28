@@ -32,36 +32,33 @@ export function AuthMenu() {
   }
 
   if (email === undefined) {
-    return <span className="hidden w-16 sm:inline-block" />;
+    return <span className="hidden w-14 sm:inline-block" />;
   }
 
   if (!email) {
     return (
       <Link
         href={`/login?next=${encodeURIComponent(pathname || "/")}`}
-        className="rounded-lg px-3 py-2 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
+        className="rounded-full px-3 py-1.5 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
       >
-        Sign in
+        Me
       </Link>
     );
   }
 
   return (
-    <span className="flex items-center gap-1">
+    <span className="flex items-center gap-0.5">
       <Link
         href="/library"
-        className={`rounded-lg px-3 py-2 text-sm transition ${
-          pathname === "/library"
-            ? "bg-accent/10 font-medium text-accent"
-            : "text-ink-600 hover:bg-ink-100 hover:text-ink-900"
-        }`}
+        className="hidden rounded-full px-3 py-1.5 text-sm text-ink-500 sm:inline"
+        title={email}
       >
-        Library
+        Me
       </Link>
       <button
         type="button"
         onClick={() => void logout()}
-        className="rounded-lg px-3 py-2 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
+        className="rounded-full px-3 py-1.5 text-sm text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
       >
         Sign out
       </button>

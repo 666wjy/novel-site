@@ -24,11 +24,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { novelSlug, chapterSlug, authorName, content } = body as {
+    const { novelSlug, chapterSlug, authorName, content, quoteText } = body as {
       novelSlug?: string;
       chapterSlug?: string;
       authorName?: string;
       content?: string;
+      quoteText?: string | null;
     };
 
     if (!novelSlug?.trim() || !chapterSlug?.trim()) {
@@ -37,19 +38,24 @@ export async function POST(req: NextRequest) {
 
     const name = (authorName || "").trim();
     const text = (content || "").trim();
+    const quote = (quoteText || "").trim();
 
-    if (name.length < 2 || name.length > 40) {
-      return NextResponse.json({ error: "Name must be 2–40 characters" }, { status: 400 });
+    if (name.length > 40) {
+      return NextResponse.json({ error: "Name must be at most 40 characters" }, { status: 400 });
     }
-    if (text.length < 2 || text.length > 2000) {
-      return NextResponse.json({ error: "Comment must be 2–2000 characters" }, { status: 400 });
+    if (text.length < 1 || text.length > 2000) {
+      return NextResponse.json({ error: "Comment must be 1–2000 characters" }, { status: 400 });
+    }
+    if (quote && (quote.length < 1 || quote.length > 500)) {
+      return NextResponse.json({ error: "Quoted text must be 1–500 characters" }, { status: 400 });
     }
 
     const comment = await createComment({
       novelSlug: novelSlug.trim(),
       chapterSlug: chapterSlug.trim(),
-      authorName: name,
+      authorName: name || "Anonymous",
       content: text,
+      quoteText: quote || null,
     });
 
     return NextResponse.json({ comment });

@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import {
   getNovel,
   getChapter,
   getAdjacentChapters,
+  getChapterMetas,
   isChapterFree,
 } from "@/lib/novels";
 import { checkReaderAccess } from "@/lib/access";
 import { Paywall } from "@/components/Paywall";
 import { UnlockBanner } from "@/components/UnlockBanner";
-import { CommentSection } from "@/components/CommentSection";
-import { ReadingSettings } from "@/components/ReadingSettings";
-import { ChapterBody } from "@/components/ChapterBody";
+import { ChapterReading } from "@/components/ChapterReading";
+import { ReaderShell } from "@/components/ReaderShell";
 import { renderMarkdown } from "@/lib/utils";
 import { getSession } from "@/lib/auth";
 import { upsertProgress } from "@/lib/library";
@@ -38,41 +37,41 @@ export default async function ChapterPage({ params }: Props) {
   const hasAccess = await checkReaderAccess(slug);
   const canRead = isChapterFree(novel, chapter.order) || hasAccess;
   const { prev, next } = await getAdjacentChapters(slug, chapterSlug);
+  const chapters = await getChapterMetas(slug);
   const session = await getSession();
   if (session) {
     await upsertProgress(session.id, slug, chapterSlug);
   }
 
+  const toc = chapters.map((ch) => ({
+    slug: ch.slug,
+    title: ch.title,
+    order: ch.order,
+    free: isChapterFree(novel, ch.order),
+    locked: !(isChapterFree(novel, ch.order) || hasAccess),
+  }));
+
   return (
-    <article className="mx-auto max-w-2xl">
+    <ReaderShell
+      novelSlug={slug}
+      novelTitle={novel.title}
+      chapterSlug={chapterSlug}
+      chapterTitle={chapter.title}
+      chapterOrder={chapter.order}
+      chapters={toc}
+      prev={prev ?? null}
+      next={next ?? null}
+    >
       <Suspense fallback={null}>
         <UnlockBanner />
       </Suspense>
 
-      <div className="mb-8 flex items-center justify-between gap-3 border-b border-ink-200/80 pb-4">
-        <nav className="min-w-0 text-sm">
-          <Link
-            href={`/novel/${slug}`}
-            className="text-ink-500 transition hover:text-accent"
-          >
-            ← Contents
-          </Link>
-          <span className="mx-2 text-ink-300">·</span>
-          <span className="truncate font-medium text-ink-700">{novel.title}</span>
-        </nav>
-        {canRead && <ReadingSettings />}
-      </div>
-
-      <header className="mb-10 text-center">
-        <p className="text-sm tracking-wide text-ink-400">Chapter {chapter.order}</p>
-        <h1 className="mt-2 font-serif text-3xl font-bold leading-snug text-ink-950 sm:text-4xl">
-          {chapter.title}
-        </h1>
-        <div className="mx-auto mt-6 h-px w-16 bg-ink-200" />
-      </header>
-
       {canRead ? (
-        <ChapterBody html={renderMarkdown(chapter.content)} />
+        <ChapterReading
+          html={renderMarkdown(chapter.content)}
+          novelSlug={slug}
+          chapterSlug={chapterSlug}
+        />
       ) : (
         <Paywall
           novelSlug={slug}
@@ -82,41 +81,6 @@ export default async function ChapterPage({ params }: Props) {
           loggedIn={Boolean(session)}
         />
       )}
-
-      <nav className="mt-14 grid grid-cols-2 gap-3 border-t border-ink-200/80 pt-6">
-        {prev ? (
-          <Link
-            href={`/novel/${slug}/${prev.slug}`}
-            className="rounded-xl border border-ink-200 bg-white/80 px-4 py-3.5 text-sm transition hover:border-accent/30 hover:bg-ink-50"
-          >
-            <span className="block text-xs text-ink-400">Previous</span>
-            <span className="mt-0.5 line-clamp-1 font-medium text-ink-800">
-              {prev.title}
-            </span>
-          </Link>
-        ) : (
-          <span className="rounded-xl border border-dashed border-ink-100 px-4 py-3.5 text-sm text-ink-300">
-            First chapter
-          </span>
-        )}
-        {next ? (
-          <Link
-            href={`/novel/${slug}/${next.slug}`}
-            className="rounded-xl border border-ink-200 bg-white/80 px-4 py-3.5 text-right text-sm transition hover:border-accent/30 hover:bg-ink-50"
-          >
-            <span className="block text-xs text-ink-400">Next</span>
-            <span className="mt-0.5 line-clamp-1 font-medium text-ink-800">
-              {next.title}
-            </span>
-          </Link>
-        ) : (
-          <span className="rounded-xl border border-dashed border-ink-100 px-4 py-3.5 text-right text-sm text-ink-300">
-            Last chapter
-          </span>
-        )}
-      </nav>
-
-      {canRead && <CommentSection novelSlug={slug} chapterSlug={chapterSlug} />}
-    </article>
+    </ReaderShell>
   );
 }

@@ -19,7 +19,12 @@ interface NovelFormProps {
   };
 }
 
-export function NovelForm({ mode, slug, initial }: NovelFormProps) {
+export function NovelForm({
+  mode,
+  slug,
+  initial,
+  defaultFreeChapters = 3,
+}: NovelFormProps & { defaultFreeChapters?: number }) {
   const router = useRouter();
   const [form, setForm] = useState({
     slug: initial?.slug || "",
@@ -29,7 +34,7 @@ export function NovelForm({ mode, slug, initial }: NovelFormProps) {
     cover: initial?.cover || "/covers/default.jpg",
     genre: initial?.genre || "",
     status: initial?.status || "ongoing",
-    freeChapters: initial?.freeChapters ?? 3,
+    freeChapters: initial?.freeChapters ?? defaultFreeChapters,
     priceLabel: initial?.priceLabel || "$2.99",
   });
   const [error, setError] = useState("");
