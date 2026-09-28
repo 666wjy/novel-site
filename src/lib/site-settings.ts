@@ -15,12 +15,15 @@ const DEFAULTS: SiteSettings = {
   featuredSlugs: [],
 };
 
-function client() {
-  if (!process.env.DATABASE_URL) return null;
-  return neon(process.env.DATABASE_URL);
+function getSql() {
+  const url = process.env.DATABASE_URL;
+  if (!url) return null;
+  return neon(url);
 }
 
-async function ensureTable(sql: ReturnType<typeof neon>) {
+async function ensureTable() {
+  const sql = getSql();
+  if (!sql) return;
   await sql`CREATE TABLE IF NOT EXISTS site_settings (
     key text PRIMARY KEY,
     value text NOT NULL
@@ -28,10 +31,10 @@ async function ensureTable(sql: ReturnType<typeof neon>) {
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  const sql = client();
+  const sql = getSql();
   if (!sql) return { ...DEFAULTS };
   try {
-    await ensureTable(sql);
+    await ensureTable();
     const rows = (await sql`SELECT key, value FROM site_settings`) as {
       key: string;
       value: string;
@@ -56,9 +59,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 }
 
 export async function saveSiteSettings(input: SiteSettings): Promise<SiteSettings> {
-  const sql = client();
+  const sql = getSql();
   if (!sql) throw new Error("DATABASE_URL 未配置");
-  await ensureTable(sql);
+  await ensureTable();
   const entries: [string, string][] = [
     ["siteName", input.siteName.trim()],
     ["tagline", input.tagline.trim()],
